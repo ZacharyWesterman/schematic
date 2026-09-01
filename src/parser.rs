@@ -64,6 +64,7 @@ pub mod ast {
 		pub name: Ident,
 		pub typedecl: Ident,
 		pub label: Text,
+		pub constraints: Vec<Constraint>,
 	}
 
 	#[derive(Debug)]
@@ -107,6 +108,26 @@ pub mod ast {
 	pub struct TagIdent {
 		pub span: Span,
 		pub value: String,
+	}
+
+	#[derive(Debug)]
+	pub struct Number {
+		pub span: Span,
+		pub value: f64,
+	}
+
+	#[derive(Debug)]
+	pub struct Constraint {
+		pub span: Span,
+		pub name: Ident,
+		pub values: Vec<ConstraintValue>,
+	}
+
+	#[derive(Debug)]
+	pub enum ConstraintValue {
+		NumberConstraint(Number),
+		IdentConstraint(Ident),
+		TextConstraint(Text),
 	}
 }
 
@@ -292,12 +313,49 @@ parser! {
 	}
 
 	field: Field {
-		ident[name] Colon ident[typedecl] KwdAs text[label] => Field {
+		ident[name] Colon ident[typedecl] KwdAs text[label] constraint_block[constraints] => Field {
 			span: span!(),
 			name: name,
 			typedecl: typedecl,
 			label: label,
+			constraints: constraints,
 		},
+	}
+
+	constraint_block: Vec<Constraint> {
+		=> vec![],
+		LBrace constraint_list[constraints] RBrace => constraints,
+		LBrace constraint_list[constraints] Comma RBrace => constraints,
+	}
+
+	constraint_list: Vec<Constraint> {
+		constraint[n] => vec![n],
+		constraint_list[mut st] Comma constraint[n] => {
+			st.push(n);
+			st
+		},
+	}
+
+	constraint: Constraint {
+		ident[name] Colon constraint_values[values] => Constraint {
+			span: span!(),
+			name: name,
+			values: values,
+		},
+	}
+
+	constraint_values: Vec<ConstraintValue> {
+		constraint_value[n] => vec![n],
+		constraint_values[mut st] constraint_value[n] => {
+			st.push(n);
+			st
+		},
+	}
+
+	constraint_value: ConstraintValue {
+		ident[n] => ConstraintValue::IdentConstraint(n),
+		text[n] => ConstraintValue::TextConstraint(n),
+		number[n] => ConstraintValue::NumberConstraint(n),
 	}
 
 	event_ident: EventIdent {
@@ -323,6 +381,13 @@ parser! {
 
 	code: Code {
 		CodeBlock(value) => Code {
+			span: span!(),
+			value: value,
+		},
+	}
+
+	number: Number {
+		NumberLiteral(value) => Number {
 			span: span!(),
 			value: value,
 		},

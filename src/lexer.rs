@@ -14,6 +14,7 @@ pub enum Token {
 	KwdIn,
 	KwdOut,
 	KwdOn,
+	KwdInclude,
 
 	//Identifiers
 	Identifier(String),
@@ -21,6 +22,7 @@ pub enum Token {
 	CodeBlock(String),
 	TagIdentifier(String),
 	EventIdentifier(String),
+	NumberLiteral(f64),
 
 	//Language Structures
 	LBrace,
@@ -45,6 +47,7 @@ lexer! {
 	"in" => Token::KwdIn,
 	"out" => Token::KwdOut,
 	"on" => Token::KwdOn,
+	"include" => Token::KwdInclude,
 
 	//Values
 	"[a-zA-Z_][a-zA-Z_0-9]*" => Token::Identifier(text.to_owned()),
@@ -52,6 +55,7 @@ lexer! {
 	"`[^`]*`" => Token::CodeBlock(text[1..text.len()-1].to_owned()),
 	"@[a-zA-Z_0-9]+" => Token::TagIdentifier(text[1..].to_owned()),
 	"![a-zA-Z_0-9]+" => Token::EventIdentifier(text[1..].to_owned()),
+	r"[0-9][0-9_]*(\.[0-9_]*)?" => Token::NumberLiteral(text.replace(r"_", "").parse::<f64>().unwrap_or(0.0)),
 
 	//Language Structures
 	r"\{" => Token::LBrace,
