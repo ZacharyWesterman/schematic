@@ -35,6 +35,8 @@ pub mod ast {
 		pub description: Option<String>,
 		pub body: Vec<NodeBlock>,
 		pub tags: Vec<TagIdent>,
+		pub partial: bool,
+		pub parent: Option<Ident>,
 	}
 
 	#[derive(Debug)]
@@ -171,12 +173,12 @@ parser! {
 	}
 
 	tag: Tag {
-		tag_ident[name] tag_parent[parent] KwdAs text[label]  LBrace tag_description[description] RBrace => Tag {
+		tag_ident[name] tag_parent[parent] KwdAs text[label]  LBrace description[desc] RBrace => Tag {
 			span: span!(),
 			name: name,
 			parent: parent,
 			label: label,
-			description: description,
+			description: desc,
 		},
 
 		tag_ident[name] tag_parent[parent] KwdAs text[label] => Tag {
@@ -188,9 +190,9 @@ parser! {
 		},
 	}
 
-	tag_description: Option<String> {
+	description: Option<String> {
 		=> None,
-		TextBlock(description) => Some(description),
+		TextBlock(desc) => Some(desc),
 	}
 
 	tag_parent: Option<TagIdent> {
@@ -207,23 +209,26 @@ parser! {
 	}
 
 	node: Node {
-		node_tags[tags] KwdNode ident[name] KwdAs text[label] LBrace node_body[body] RBrace => Node {
+		node_tags[tags] node_partial[partial] KwdNode ident[name] node_parent[parent] KwdAs text[label] LBrace description[desc] node_body[body] RBrace => Node {
 			span: span!(),
 			name: name,
 			label: label,
-			description: None,
+			description: desc,
 			body: body,
 			tags: tags,
+			partial: partial,
+			parent: parent,
 		},
+	}
 
-		node_tags[tags] KwdNode ident[name] KwdAs text[label] LBrace TextBlock(description) node_body[body] RBrace => Node {
-			span: span!(),
-			name: name,
-			label: label,
-			description: Some(description),
-			body: body,
-			tags: tags,
-		},
+	node_partial: bool {
+		KwdPartial => true,
+		=> false,
+	}
+
+	node_parent: Option<Ident> {
+		KwdExtends ident[n] => Some(n),
+		=> None,
 	}
 
 	node_body: Vec<NodeBlock> {

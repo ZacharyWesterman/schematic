@@ -15,6 +15,8 @@ pub enum Token {
 	KwdOut,
 	KwdOn,
 	KwdInclude,
+	KwdPartial,
+	KwdExtends,
 
 	//Identifiers
 	Identifier(String),
@@ -48,6 +50,8 @@ lexer! {
 	"out" => Token::KwdOut,
 	"on" => Token::KwdOn,
 	"include" => Token::KwdInclude,
+	"partial" => Token::KwdPartial,
+	"extends" => Token::KwdExtends,
 
 	//Values
 	"[a-zA-Z_][a-zA-Z_0-9]*" => Token::Identifier(text.to_owned()),
