@@ -19,12 +19,14 @@ pub enum Token {
 	Identifier(String),
 	TextBlock(String),
 	CodeBlock(String),
-	TagIdent(String),
+	TagIdentifier(String),
 	EventIdentifier(String),
 
 	//Language Structures
 	LBrace,
 	RBrace,
+	LBracket,
+	RBracket,
 	Colon,
 	Comma,
 }
@@ -45,15 +47,17 @@ lexer! {
 	"on" => Token::KwdOn,
 
 	//Values
-	"[a-zA-Z_0-9]+" => Token::Identifier(text.to_owned()),
-	"\"[^\"]*\"" => Token::TextBlock(text.to_owned()),
-	"`[^`]*`" => Token::CodeBlock(text.to_owned()),
-	"@[a-zA-Z_0-9]+" => Token::TagIdent(text.to_owned()),
-	"![a-zA-Z_0-9]+" => Token::EventIdentifier(text.to_owned()),
+	"[a-zA-Z_][a-zA-Z_0-9]*" => Token::Identifier(text.to_owned()),
+	"\"[^\"]*\"" => Token::TextBlock(text[1..text.len()-1].to_owned()),
+	"`[^`]*`" => Token::CodeBlock(text[1..text.len()-1].to_owned()),
+	"@[a-zA-Z_0-9]+" => Token::TagIdentifier(text[1..].to_owned()),
+	"![a-zA-Z_0-9]+" => Token::EventIdentifier(text[1..].to_owned()),
 
 	//Language Structures
 	r"\{" => Token::LBrace,
 	r"\}" => Token::RBrace,
+	r"\[" => Token::LBracket,
+	r"\]" => Token::RBracket,
 	":" => Token::Colon,
 	"," => Token::Comma,
 }

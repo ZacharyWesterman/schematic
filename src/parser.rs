@@ -14,7 +14,18 @@ pub mod ast {
 
 	#[derive(Debug)]
 	pub enum Stmt {
+		TagStmt(Box<Tag>),
 		NodeStmt(Box<Node>),
+	}
+
+	#[derive(Debug)]
+	pub struct Tag {
+		pub span: Span,
+		pub name: TagIdent,
+		pub parent: Option<TagIdent>,
+		pub label: Text,
+		pub description: Option<String>,
+		pub children: Vec<Tag>,
 	}
 
 	#[derive(Debug)]
@@ -22,8 +33,9 @@ pub mod ast {
 		pub span: Span,
 		pub name: Ident,
 		pub label: Text,
-		pub description: String,
+		pub description: Option<String>,
 		pub body: Vec<NodeBlock>,
+		pub tags: Vec<TagIdent>,
 	}
 
 	#[derive(Debug)]
@@ -37,6 +49,7 @@ pub mod ast {
 		NodeInputs(Box<FieldList>),
 		NodeOutputs(Box<FieldList>),
 		NodeEvent(Box<Event>),
+		NodeCode(Box<Code>),
 	}
 
 	#[derive(Debug)]
@@ -57,14 +70,7 @@ pub mod ast {
 	pub struct Event {
 		pub span: Span,
 		pub triggers: Vec<EventType>,
-		pub outputs: Vec<EventOutput>,
-	}
-
-	#[derive(Debug)]
-	pub struct EventOutput {
-		pub span: Span,
-		pub name: Ident,
-		pub code: Option<Code>,
+		pub code: Code,
 	}
 
 	#[derive(Debug)]
@@ -96,6 +102,12 @@ pub mod ast {
 		pub span: Span,
 		pub value: String,
 	}
+
+	#[derive(Debug)]
+	pub struct TagIdent {
+		pub span: Span,
+		pub value: String,
+	}
 }
 
 use crate::lexer::Token::*;
@@ -120,33 +132,86 @@ parser! {
 
 	statements: Vec<Statement> {
 		=> vec![],
-		statements[mut st] statement[e] => {
-			st.push(e);
+		statements[mut st] statement[n] => {
+			st.push(n);
 			st
 		},
 	}
 
 	statement: Statement {
+		tag[n] => Statement {
+			span: span!(),
+			node: Stmt::TagStmt(Box::new(n)),
+		},
+
 		node[n] => Statement {
 			span: span!(),
 			node: Stmt::NodeStmt(Box::new(n)),
 		},
 	}
 
+	tag: Tag {
+		tag_ident[name] tag_parent[parent] KwdAs text[label]  LBrace tag_description[description] tag_decl_list[children] RBrace => Tag {
+			span: span!(),
+			name: name,
+			parent: parent,
+			label: label,
+			description: description,
+			children: children,
+		},
+
+		tag_ident[name] tag_parent[parent] KwdAs text[label] => Tag {
+			span: span!(),
+			name: name,
+			parent: parent,
+			label: label,
+			description: None,
+			children: vec![],
+		},
+	}
+
+	tag_description: Option<String> {
+		=> None,
+		TextBlock(description) => Some(description),
+	}
+
+	tag_parent: Option<TagIdent> {
+		=> None,
+		KwdIn tag_ident[parent] => Some(parent),
+	}
+
+	tag_decl_list: Vec<Tag> {
+		=> vec![],
+		tag_decl_list[mut st] tag[n] => {
+			st.push(n);
+			st
+		},
+	}
+
 	node: Node {
-		KwdNode ident[name] KwdAs text[label] LBrace TextBlock(description) node_body[body] RBrace => Node {
+		node_tags[tags] KwdNode ident[name] KwdAs text[label] LBrace node_body[body] RBrace => Node {
 			span: span!(),
 			name: name,
 			label: label,
-			description: description,
+			description: None,
 			body: body,
+			tags: tags,
+		},
+
+		node_tags[tags] KwdNode ident[name] KwdAs text[label] LBrace TextBlock(description) node_body[body] RBrace => Node {
+			span: span!(),
+			name: name,
+			label: label,
+			description: Some(description),
+			body: body,
+			tags: tags,
 		},
 	}
 
 	node_body: Vec<NodeBlock> {
 		=> vec![],
-		node_body[mut st] node_block[e] => {
-			st.push(e);
+		node_body[mut st] node_block[n] => {
+			st.push(n);
 			st
 		},
 	}
@@ -165,6 +230,11 @@ parser! {
 		event[n] => NodeBlock {
 			span: span!(),
 			block: Block::NodeEvent(Box::new(n)),
+		},
+
+		code[n] => NodeBlock {
+			span: span!(),
+			block: Block::NodeCode(Box::new(n)),
 		},
 	}
 
@@ -193,10 +263,10 @@ parser! {
 	}
 
 	event: Event {
-		KwdOn event_triggers[triggers] LBrace event_outputs[output_list] RBrace => Event {
+		KwdOn event_triggers[triggers] code[event_code] => Event {
 			span: span!(),
 			triggers: triggers,
-			outputs: output_list,
+			code: event_code,
 		},
 	}
 
@@ -211,28 +281,6 @@ parser! {
 	event_type: EventType {
 		ident[n] => EventType::InputEvent(n),
 		event_ident[n] => EventType::InternalEvent(n),
-	}
-
-	event_outputs: Vec<EventOutput> {
-		=> vec![],
-		event_outputs[mut st] event_output[n] => {
-			st.push(n);
-			st
-		},
-	}
-
-	event_output: EventOutput {
-		ident[name] code[value] => EventOutput {
-			span: span!(),
-			name: name,
-			code: Some(value),
-		},
-
-		ident[name] => EventOutput {
-			span: span!(),
-			name: name,
-			code: None,
-		},
 	}
 
 	field_list: Vec<Field> {
@@ -279,6 +327,26 @@ parser! {
 			value: value,
 		},
 	}
+
+	tag_ident: TagIdent {
+		TagIdentifier(value) => TagIdent {
+			span: span!(),
+			value: value,
+		},
+	}
+
+	node_tags: Vec<TagIdent> {
+		=> vec![],
+		LBracket tag_list[n] RBracket => n,
+	}
+
+	tag_list: Vec<TagIdent> {
+		tag_ident[n] => vec![n],
+		tag_list[mut st] Comma tag_ident[n] => {
+			st.push(n);
+			st
+		},
+	}
 }
 
 pub fn parse<I: Iterator<Item = (Token, Span)>>(
@@ -295,7 +363,7 @@ use regex::Regex;
 pub fn pretty(ast: &Program) -> String {
 	let fluff = Regex::new(r"\n *[\)\}\]],?").unwrap();
 	let spans = Regex::new(r"\n *(lo|hi)").unwrap();
-	let other = Regex::new(r"((Literal|Var)\()\n *([^\n]+)").unwrap();
+	let other = Regex::new(r"\n *span:[^\n]+").unwrap();
 
 	let text = format!("{:#?}", ast).replace("    ", "  ");
 
