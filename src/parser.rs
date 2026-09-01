@@ -25,7 +25,6 @@ pub mod ast {
 		pub parent: Option<TagIdent>,
 		pub label: Text,
 		pub description: Option<String>,
-		pub children: Vec<Tag>,
 	}
 
 	#[derive(Debug)]
@@ -172,13 +171,12 @@ parser! {
 	}
 
 	tag: Tag {
-		tag_ident[name] tag_parent[parent] KwdAs text[label]  LBrace tag_description[description] tag_decl_list[children] RBrace => Tag {
+		tag_ident[name] tag_parent[parent] KwdAs text[label]  LBrace tag_description[description] RBrace => Tag {
 			span: span!(),
 			name: name,
 			parent: parent,
 			label: label,
 			description: description,
-			children: children,
 		},
 
 		tag_ident[name] tag_parent[parent] KwdAs text[label] => Tag {
@@ -187,7 +185,6 @@ parser! {
 			parent: parent,
 			label: label,
 			description: None,
-			children: vec![],
 		},
 	}
 
