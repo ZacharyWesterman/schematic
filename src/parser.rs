@@ -56,7 +56,7 @@ pub mod ast {
 	#[derive(Debug)]
 	pub struct Event {
 		pub span: Span,
-		pub triggers: Vec<Ident>,
+		pub triggers: Vec<EventType>,
 		pub outputs: Vec<EventOutput>,
 	}
 
@@ -65,6 +65,18 @@ pub mod ast {
 		pub span: Span,
 		pub name: Ident,
 		pub code: Option<Code>,
+	}
+
+	#[derive(Debug)]
+	pub enum EventType {
+		InputEvent(Ident),
+		InternalEvent(EventIdent),
+	}
+
+	#[derive(Debug)]
+	pub struct EventIdent {
+		pub span: Span,
+		pub value: String,
 	}
 
 	#[derive(Debug)]
@@ -188,12 +200,17 @@ parser! {
 		},
 	}
 
-	event_triggers: Vec<Ident> {
-		ident[n] => vec![n],
-		event_triggers[mut st] Comma ident[n] => {
+	event_triggers: Vec<EventType> {
+		event_type[n] => vec![n],
+		event_triggers[mut st] Comma event_type[n] => {
 			st.push(n);
 			st
 		},
+	}
+
+	event_type: EventType {
+		ident[n] => EventType::InputEvent(n),
+		event_ident[n] => EventType::InternalEvent(n),
 	}
 
 	event_outputs: Vec<EventOutput> {
@@ -232,6 +249,13 @@ parser! {
 			name: name,
 			typedecl: typedecl,
 			label: label,
+		},
+	}
+
+	event_ident: EventIdent {
+		EventIdentifier(value) => EventIdent {
+			span: span!(),
+			value: value,
 		},
 	}
 

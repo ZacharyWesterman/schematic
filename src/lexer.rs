@@ -15,10 +15,12 @@ pub enum Token {
 	KwdOut,
 	KwdOn,
 
-	//Values
+	//Identifiers
 	Identifier(String),
 	TextBlock(String),
 	CodeBlock(String),
+	TagIdent(String),
+	EventIdentifier(String),
 
 	//Language Structures
 	LBrace,
@@ -43,9 +45,11 @@ lexer! {
 	"on" => Token::KwdOn,
 
 	//Values
-	"[a-zA-Z_][a-zA-Z_0-9]*" => Token::Identifier(text.to_owned()),
+	"[a-zA-Z_0-9]+" => Token::Identifier(text.to_owned()),
 	"\"[^\"]*\"" => Token::TextBlock(text.to_owned()),
 	"`[^`]*`" => Token::CodeBlock(text.to_owned()),
+	"@[a-zA-Z_0-9]+" => Token::TagIdent(text.to_owned()),
+	"![a-zA-Z_0-9]+" => Token::EventIdentifier(text.to_owned()),
 
 	//Language Structures
 	r"\{" => Token::LBrace,
@@ -96,7 +100,7 @@ impl<'a> Iterator for Lexer<'a> {
 
 				Token::Unknown(text) => {
 					message::error(
-						format!("unexpected character `{}`", text),
+						format!("Unexpected character `{}`", text),
 						Some(span),
 						Some(&self.context),
 					);
