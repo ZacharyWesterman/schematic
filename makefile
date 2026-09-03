@@ -143,6 +143,7 @@ src/version.cpp:
 	echo "const char* VERSION = \"$(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)\";" > src/version.cpp
 
 clean: cleanbin cleanobjs
+	$(RM) src/version.cpp
 
 cleanobjs:
 	$(RMDIR) obj
