@@ -1,4 +1,5 @@
 #include "lexer.hpp"
+#include "../parse_error.hpp"
 #include "tokens.hpp"
 #include <regex>
 
@@ -15,6 +16,8 @@ const std::regex KWD_ON("^on\\b");
 const std::regex KWD_INCLUDE("^include\\b");
 const std::regex KWD_PARTIAL("^partial\\b");
 const std::regex KWD_EXTENDS("^extends\\b");
+const std::regex COMMENT("^//[^\n]*");
+const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
 
 #define CHECK_TOKEN(id) \
 	if (std::regex_search(str, match, id)) { \
@@ -72,8 +75,8 @@ auto get_token(programText &state) -> std::optional<token> {
 		const char *str = text.cstring() + state.index;
 		std::cmatch match;
 
-		// Skip whitespace
-		if (std::regex_search(str, match, WHITESPACE)) {
+		// Skip whitespace and comments
+		if (std::regex_search(str, match, WHITESPACE) || std::regex_search(str, match, COMMENT) || std::regex_search(str, match, COMMENT_MULTILINE)) {
 			state.index += match.length();
 			continue;
 		}
@@ -91,7 +94,7 @@ auto get_token(programText &state) -> std::optional<token> {
 		CHECK_TOKEN(TAG)
 		CHECK_TOKEN(EVENT)
 
-		state.index++; // Skip unknown chars
+		throw parse_error("Unknown character.", {state.index, state.index++});
 	}
 
 	return {};
