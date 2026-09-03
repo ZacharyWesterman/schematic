@@ -94,7 +94,7 @@ auto get_token(programText &state) -> std::optional<token> {
 		CHECK_TOKEN(TAG)
 		CHECK_TOKEN(EVENT)
 
-		throw parse_error("Unknown character.", {state.index, state.index++});
+		throw parse_error("Unknown character `"_zs + c + "`", {state.index, state.index++});
 	}
 
 	return {};

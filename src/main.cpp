@@ -1,7 +1,6 @@
 #include "parser/node/lexer.hpp"
 #include "parser/parse_error.hpp"
 #include <iostream>
-#include <regex>
 
 int main() {
 	auto node_parser = parser::node_parser(R"(
