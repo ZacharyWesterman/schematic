@@ -21,7 +21,7 @@ D1 = $(sort $(dir $(wildcard $(D0)*/)))
 DIRS := $(sort $(dir $(wildcard $(D1)*/)) $(D0) $(D1) )
 SRCS := $(wildcard $(addsuffix *.cpp, $(DIRS)))
 HEADERS := $(wildcard $(addsuffix *.hpp, $(DIRS))) $(wildcard src/*.hpp)
-OBJS := obj/main.o $(patsubst src/%.cpp,obj/%.o,$(SRCS))
+OBJS := obj/main.o obj/version.o $(patsubst src/%.cpp,obj/%.o,$(SRCS))
 
 #default compiler
 CXX = g++
@@ -138,6 +138,9 @@ obj/main.o: src/main.cpp
 obj/%.o: src/%.cpp src/%.hpp makefile
 	@$(MKDIR) $(dir $@)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+src/version.cpp:
+	echo "const char* VERSION = \"$(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)\";" > src/version.cpp
 
 clean: cleanbin cleanobjs
 

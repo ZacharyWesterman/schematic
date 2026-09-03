@@ -1,8 +1,11 @@
 #include "parser/node/lexer.hpp"
 #include "parser/parse_error.hpp"
+#include "version.hpp"
 #include <iostream>
 
 int main() {
+	std::cout << "Node Parser version " << VERSION << std::endl;
+
 	auto node_parser = parser::node_parser(R"(
 		@math as "Arithmetic"
 
@@ -13,7 +16,6 @@ int main() {
 			//in val1: number as "V1"
 			//in val2: number as "V2"
 		}
-		0b0101
 	)");
 
 	try {
