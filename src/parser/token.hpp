@@ -9,6 +9,7 @@ struct token {
 	int id;
 	span range;
 	zstring text;
+	double value = 0.0;
 };
 
 } // namespace parser

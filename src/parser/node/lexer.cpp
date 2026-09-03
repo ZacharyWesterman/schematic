@@ -7,7 +7,10 @@ const std::regex IDENTIFIER("^[a-zA-Z_]\\w*");
 const std::regex WHITESPACE("^\\s+");
 const std::regex TAG("^@\\w+");
 const std::regex EVENT("^!\\w+");
-const std::regex NUMBER("^!\\w+");
+const std::regex NUMBER_DEC("^(\\.[0-9_]+|[0-9][0-9_]*(\\.[0-9_]+)?)\\b");
+const std::regex NUMBER_HEX("^\\b0x[0-9a-fA-F_]*\\b");
+const std::regex NUMBER_OCT("^0c[0-7]*\\b");
+const std::regex NUMBER_BIN("^0b[01]+\\b");
 const std::regex KWD_NODE("^node\\b");
 const std::regex KWD_AS("^as\\b");
 const std::regex KWD_IN("^in\\b");
@@ -19,14 +22,28 @@ const std::regex KWD_EXTENDS("^extends\\b");
 const std::regex COMMENT("^//[^\n]*");
 const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
 
-#define CHECK_TOKEN(id) \
+#define CHECK_TOKEN(id) CHECK_TOKEN_WITH(id, match.str())
+
+#define CHECK_TOKEN_WITH(id, match_expr) \
 	if (std::regex_search(str, match, id)) { \
 		const int old_index = state.index; \
 		state.index += match.length(); \
 		return token{ \
 			node::id, \
 			span{old_index, state.index - 1}, \
-			match.str(), \
+			match_expr, \
+		}; \
+	}
+
+#define CHECK_TOKEN_WITH_VALUE(id, out_id, match_expr, parse_expr) \
+	if (std::regex_search(str, match, id)) { \
+		const int old_index = state.index; \
+		state.index += match.length(); \
+		return token{ \
+			node::out_id, \
+			span{old_index, state.index - 1}, \
+			match_expr, \
+			match_expr.parse_expr, \
 		}; \
 	}
 
@@ -47,7 +64,7 @@ auto get_token(programText &state) -> std::optional<token> {
 				return token{
 					c == '"' ? node::STRING : node::CODE,
 					span{read_until_index, state.index - 1},
-					text.substr(read_until_index, state.index - read_until_index),
+					text.substr(read_until_index + 1, state.index - read_until_index - 2),
 				};
 			}
 			continue;
@@ -81,6 +98,8 @@ auto get_token(programText &state) -> std::optional<token> {
 			continue;
 		}
 
+		CHECK_TOKEN_WITH(TAG, match.str().substr(1))
+		CHECK_TOKEN_WITH(EVENT, match.str().substr(1))
 		CHECK_TOKEN(KWD_NODE)
 		CHECK_TOKEN(KWD_AS)
 		CHECK_TOKEN(KWD_IN)
@@ -90,11 +109,22 @@ auto get_token(programText &state) -> std::optional<token> {
 		CHECK_TOKEN(KWD_PARTIAL)
 		CHECK_TOKEN(KWD_EXTENDS)
 		CHECK_TOKEN(IDENTIFIER)
-		CHECK_TOKEN(NUMBER)
-		CHECK_TOKEN(TAG)
-		CHECK_TOKEN(EVENT)
+		CHECK_TOKEN_WITH_VALUE(NUMBER_DEC, NUMBER, zstring(match.str()), replace("_", "").floating())
+		CHECK_TOKEN_WITH_VALUE(NUMBER_HEX, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(16))
+		CHECK_TOKEN_WITH_VALUE(NUMBER_OCT, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(8))
+		CHECK_TOKEN_WITH_VALUE(NUMBER_BIN, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(2))
 
 		throw parse_error("Unknown character `"_zs + c + "`", {state.index, state.index++});
+	}
+
+	// Spit out any remaining string or code segments
+	if (read_until) {
+		state.index = text.length();
+		return token{
+			read_until == '"' ? node::STRING : node::CODE,
+			span{read_until_index, state.index - 1},
+			text.substr(read_until_index + 1, state.index - read_until_index - 1),
+		};
 	}
 
 	return {};

@@ -9,7 +9,11 @@ int main() {
 		[@math]
 		node add as "Add" {
 			"Add two numbers"
+
+			//in val1: number as "V1"
+			//in val2: number as "V2"
 		}
+		0b0101
 	)");
 
 	try {
