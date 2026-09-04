@@ -15,6 +15,8 @@ enum {
 	RBRACE,
 	LBRACKET,
 	RBRACKET,
+	COLON,
+	COMMA,
 
 	KWD_NODE,
 	KWD_AS,

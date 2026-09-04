@@ -22,6 +22,11 @@ const std::regex KWD_EXTENDS("^extends\\b");
 const std::regex COMMENT("^//[^\n]*");
 const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
 
+#define CHAR_TOKEN(chr, id) \
+	if (c == chr) { \
+		return token{tokens::id, span{state.index, state.index++}, c}; \
+	}
+
 #define CHECK_TOKEN(id) CHECK_TOKEN_WITH(id, match.str())
 
 #define CHECK_TOKEN_WITH(id, match_expr) \
@@ -76,18 +81,12 @@ auto get_token(programText &state) -> std::optional<token> {
 			continue;
 		}
 
-		if (c == '[') {
-			return token{tokens::LBRACKET, span{state.index, state.index++}, c};
-		}
-		if (c == ']') {
-			return token{tokens::RBRACKET, span{state.index, state.index++}, c};
-		}
-		if (c == '{') {
-			return token{tokens::LBRACE, span{state.index, state.index++}, c};
-		}
-		if (c == '}') {
-			return token{tokens::RBRACE, span{state.index, state.index++}, c};
-		}
+		CHAR_TOKEN('[', LBRACKET)
+		CHAR_TOKEN(']', RBRACKET)
+		CHAR_TOKEN('{', LBRACE)
+		CHAR_TOKEN('}', RBRACE)
+		CHAR_TOKEN(':', COLON)
+		CHAR_TOKEN(',', COMMA)
 
 		const char *str = text.cstring() + state.index;
 		std::cmatch match;
