@@ -5,6 +5,6 @@
 
 namespace parser {
 
-auto node_parser(const zstring &text) -> tokenizer;
+auto node_lexer(const zstring &text) -> tokenizer;
 
 }

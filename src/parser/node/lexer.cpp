@@ -130,7 +130,7 @@ auto get_token(programText &state) -> std::optional<token> {
 	return {};
 }
 
-auto node_parser(const zstring &text) -> tokenizer {
+auto node_lexer(const zstring &text) -> tokenizer {
 	return tokenizer({text, 0}, get_token);
 }
 
