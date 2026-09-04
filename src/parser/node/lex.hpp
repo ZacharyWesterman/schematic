@@ -3,8 +3,8 @@
 #include "../tokenizer.hpp"
 #include <z/core/generator.hpp>
 
-namespace parser {
+namespace parser::node {
 
-auto node_lexer(const zstring &text) -> tokenizer;
+auto lex(const zstring &text) -> tokenizer;
 
 }

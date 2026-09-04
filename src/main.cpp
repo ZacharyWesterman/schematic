@@ -1,25 +1,17 @@
-#include "parser/node/lexer.hpp"
+#include "parser/node/lex.hpp"
 #include "parser/parse_error.hpp"
 #include "version.hpp"
 #include <iostream>
+#include <z/all.hpp>
 
 int main() {
-	std::cout << "Node Parser version " << VERSION << std::endl;
+	("Node Parser version "_zs + VERSION).writeln(std::cout);
+	auto program_text = z::file::read("tests/nodes/math1.node");
 
-	auto node_lexer = parser::node_lexer(R"(
-		@math as "Arithmetic"
-
-		[@math]
-		node add as "Add" {
-			"Add two numbers"
-
-			//in val1: number as "V1"
-			//in val2: number as "V2"
-		}
-	)");
+	auto tokens = parser::node::lex(program_text);
 
 	try {
-		for (auto token : node_lexer) {
+		for (auto token : tokens) {
 			token.text.writeln(std::cout);
 		}
 	} catch (const parser::parse_error &e) {

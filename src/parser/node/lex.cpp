@@ -1,4 +1,4 @@
-#include "lexer.hpp"
+#include "lex.hpp"
 #include "../parse_error.hpp"
 #include "tokens.hpp"
 #include <regex>
@@ -29,7 +29,7 @@ const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
 		const int old_index = state.index; \
 		state.index += match.length(); \
 		return token{ \
-			node::id, \
+			tokens::id, \
 			span{old_index, state.index - 1}, \
 			match_expr, \
 		}; \
@@ -40,14 +40,14 @@ const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
 		const int old_index = state.index; \
 		state.index += match.length(); \
 		return token{ \
-			node::out_id, \
+			tokens::out_id, \
 			span{old_index, state.index - 1}, \
 			match_expr, \
 			match_expr.parse_expr, \
 		}; \
 	}
 
-namespace parser {
+namespace parser::node {
 
 auto get_token(programText &state) -> std::optional<token> {
 	const auto &text = state.text;
@@ -62,7 +62,7 @@ auto get_token(programText &state) -> std::optional<token> {
 			state.index++;
 			if (c == read_until) {
 				return token{
-					c == '"' ? node::STRING : node::CODE,
+					c == '"' ? tokens::STRING : tokens::CODE,
 					span{read_until_index, state.index - 1},
 					text.substr(read_until_index + 1, state.index - read_until_index - 2),
 				};
@@ -77,16 +77,16 @@ auto get_token(programText &state) -> std::optional<token> {
 		}
 
 		if (c == '[') {
-			return token{node::LBRACKET, span{state.index, state.index++}, c};
+			return token{tokens::LBRACKET, span{state.index, state.index++}, c};
 		}
 		if (c == ']') {
-			return token{node::RBRACKET, span{state.index, state.index++}, c};
+			return token{tokens::RBRACKET, span{state.index, state.index++}, c};
 		}
 		if (c == '{') {
-			return token{node::LBRACE, span{state.index, state.index++}, c};
+			return token{tokens::LBRACE, span{state.index, state.index++}, c};
 		}
 		if (c == '}') {
-			return token{node::RBRACE, span{state.index, state.index++}, c};
+			return token{tokens::RBRACE, span{state.index, state.index++}, c};
 		}
 
 		const char *str = text.cstring() + state.index;
@@ -121,7 +121,7 @@ auto get_token(programText &state) -> std::optional<token> {
 	if (read_until) {
 		state.index = text.length();
 		return token{
-			read_until == '"' ? node::STRING : node::CODE,
+			read_until == '"' ? tokens::STRING : tokens::CODE,
 			span{read_until_index, state.index - 1},
 			text.substr(read_until_index + 1, state.index - read_until_index - 1),
 		};
@@ -130,8 +130,8 @@ auto get_token(programText &state) -> std::optional<token> {
 	return {};
 }
 
-auto node_lexer(const zstring &text) -> tokenizer {
+auto lex(const zstring &text) -> tokenizer {
 	return tokenizer({text, 0}, get_token);
 }
 
-} // namespace parser
+} // namespace parser::node

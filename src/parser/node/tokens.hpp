@@ -1,6 +1,6 @@
 #pragma once
 
-namespace parser::node {
+namespace parser::node::tokens {
 
 enum {
 	UNKNOWN,

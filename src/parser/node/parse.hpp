@@ -4,8 +4,8 @@
 #include "../tokenizer.hpp"
 #include <memory>
 
-namespace parser {
+namespace parser::node {
 
-auto node_parser(tokenizer &lexer) -> std::unique_ptr<ast>;
+auto parse(tokenizer &lexer) -> std::unique_ptr<ast>;
 
 }
