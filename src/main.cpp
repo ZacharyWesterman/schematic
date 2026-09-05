@@ -1,3 +1,4 @@
+#include "parser/context.hpp"
 #include "parser/node/lex.hpp"
 #include "parser/node/parse.hpp"
 #include "parser/parse_error.hpp"
@@ -10,8 +11,16 @@ int main() {
 	auto program_text = z::file::read("tests/nodes/math1.node");
 
 	auto lexer = parser::node::lex(program_text);
-	auto ast = parser::node::parse(lexer);
 
-	std::cout << "\nPARSED AST:\n" << std::endl;
-	ast->print(std::cout, 1);
+	try {
+		auto ast = parser::node::parse(lexer);
+		std::cout << "\nPARSED AST:\n" << std::endl;
+		ast->print(std::cout, 1);
+	} catch (const parser::parse_error &e) {
+		auto ctx = parser::context(program_text, e.range);
+
+		std::cerr << "\nERROR: " << ctx.line.start << ", " << ctx.col.start;
+		std::cerr << " to " << ctx.line.end << ", " << ctx.col.end;
+		std::cerr << ": " << e.message << std::endl;
+	}
 }

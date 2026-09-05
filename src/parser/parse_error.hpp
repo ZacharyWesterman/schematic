@@ -8,9 +8,9 @@ namespace parser {
 
 struct parse_error : public std::exception {
 	const zstring message;
-	const span context;
+	const span range;
 
-	parse_error(const zstring message, span context);
+	parse_error(const zstring message, span range);
 
 	const char *what() const noexcept override;
 };

@@ -10,8 +10,12 @@ namespace parser::node {
 
 typedef std::function<std::optional<ast_ref>(tokenizer &)> parse_rule;
 
+auto symbol(const std::optional<token> &tok) -> zstring {
+	return tok.has_value() ? ("`"_zs + tok.value().text + "`") : "EOF";
+}
+
 auto accept(tokenizer &lexer, int token_id) -> std::optional<token> {
-	auto tok = lexer.has_token() ? lexer.get_token() : lexer.next();
+	auto tok = lexer.get_token();
 
 	if (tok && tok.value().id == token_id) {
 		lexer.next();
@@ -21,12 +25,22 @@ auto accept(tokenizer &lexer, int token_id) -> std::optional<token> {
 	return {};
 }
 
+auto accept(tokenizer &lexer, std::initializer_list<parse_rule> rules) -> std::optional<ast_ref> {
+	for (auto rule : rules) {
+		auto node = rule(lexer);
+		if (node) {
+			return node;
+		}
+	}
+	return {};
+}
+
 auto expect(tokenizer &lexer, int token_id, const zstring &expected_symbol) -> token {
 	auto result = accept(lexer, token_id);
 
 	if (!result) {
-		zstring found_sym = lexer.has_token() ? lexer.get_token().text : "EOF";
-		throw parse_error("Expected "_zs + expected_symbol + ", but found " + found_sym, lexer.get_span());
+		auto tok = lexer.existing_token();
+		throw parse_error("Expected "_zs + expected_symbol + ", but found " + symbol(tok), lexer.get_span());
 	}
 
 	return result.value();
@@ -36,11 +50,25 @@ auto expect(tokenizer &lexer, parse_rule rule, const zstring &expected_symbol) -
 	auto result = rule(lexer);
 
 	if (!result) {
-		zstring found_sym = lexer.has_token() ? lexer.get_token().text : "EOF";
-		throw parse_error("Expected "_zs + expected_symbol + ", but found " + found_sym, lexer.get_span());
+		auto tok = lexer.existing_token();
+		throw parse_error("Expected "_zs + expected_symbol + ", but found " + symbol(tok), lexer.get_span());
 	}
 
 	return result.value();
+}
+
+auto expect_if(tokenizer &lexer, parse_rule rule, const zstring &expected_symbol, bool condition) -> std::optional<ast_ref> {
+	if (condition) {
+		return expect(lexer, rule, expected_symbol);
+	}
+	return rule(lexer);
+}
+
+auto expect_if(tokenizer &lexer, int token_id, const zstring &expected_symbol, bool condition) -> std::optional<token> {
+	if (condition) {
+		return expect(lexer, token_id, expected_symbol);
+	}
+	return accept(lexer, token_id);
 }
 
 auto tag_decl(tokenizer &lexer) -> std::optional<ast_ref> {
@@ -71,6 +99,36 @@ auto tag_decl(tokenizer &lexer) -> std::optional<ast_ref> {
 	return node;
 }
 
+auto tag_list(tokenizer &lexer) -> std::optional<z::core::array<token>> {
+	if (!accept(lexer, tokens::LBRACKET)) {
+		return {};
+	}
+
+	z::core::array<token> results;
+	do {
+		auto tag = expect(lexer, tokens::TAG, "<@tag>");
+		results.push(tag);
+		auto comma = accept(lexer, tokens::COMMA);
+
+		if (accept(lexer, tokens::RBRACKET)) {
+			break;
+		}
+
+		if (!comma) {
+			throw parse_error("Expected `,`, `]` or <@tag> but found "_zs + symbol(lexer.existing_token()), lexer.get_span());
+		}
+	} while (true);
+
+	return results;
+}
+
+auto node_decl(tokenizer &lexer) -> std::optional<ast_ref> {
+	auto tags = tag_list(lexer);
+
+	auto tok = expect_if(lexer, tokens::KWD_NODE, "`node`", (bool)tags);
+	return {};
+}
+
 auto program(tokenizer &lexer) -> ast_ref {
 	(void)lexer;
 
@@ -79,14 +137,17 @@ auto program(tokenizer &lexer) -> ast_ref {
 
 	std::optional<ast_ref> child;
 	do {
-		child = tag_decl(lexer);
-
-		if (!child && lexer.has_token()) {
-			throw parse_error(("Unexpected symbol `"_zs + lexer.get_token().text + "`. Expected a tag or node definition."), lexer.get_span());
-		}
+		child = accept(lexer, {tag_decl, node_decl});
 
 		if (!child) {
-			break;
+			if (lexer.empty()) {
+				// End of program.
+				break;
+			}
+
+			// Unexpected token
+			auto tok = lexer.existing_token();
+			throw parse_error(("Expected a node or tag definition but found "_zs + symbol(tok) + "."), lexer.get_span());
 		}
 
 		node->children.push(child.value());

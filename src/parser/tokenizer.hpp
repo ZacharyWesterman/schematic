@@ -14,6 +14,7 @@ struct programText {
 typedef z::core::generator<token, programText> _tokenizer;
 
 class tokenizer : public _tokenizer {
+	bool token_pulled = false;
 	int prev_index = 0;
 	std::optional<token> tok;
 
@@ -23,8 +24,11 @@ public:
 	auto next() -> std::optional<token> override;
 
 	auto get_span() -> span;
-	auto has_token() -> bool;
-	auto get_token() -> token;
+	auto existing_token() -> std::optional<token>;
+
+	auto get_token() -> std::optional<token>;
+	auto started() const -> bool;
+	auto empty() const -> bool;
 };
 
 } // namespace parser

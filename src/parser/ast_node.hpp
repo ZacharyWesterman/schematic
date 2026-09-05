@@ -27,9 +27,4 @@ struct ast_node : public std::enable_shared_from_this<ast_node> {
 
 typedef std::shared_ptr<ast_node> ast_ref;
 
-// template <typename T, typename U>
-// inline auto base(const U &shared_ptr) -> T {
-// 	return std::dynamic_pointer_cast<T, U>(shared_ptr);
-// }
-
 } // namespace parser

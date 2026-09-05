@@ -1,14 +1,3 @@
 @math as "Arithmetic"
 
-// [@math]
-// node add as "Add" {
-//     "Add two numbers"
-
-//     in eval: none as "Evaluate"
-//     in val1: number as "V1"
-//     in val2: number as "V2"
-
-//     out result: number as "Sum"
-
-//     on eval `output_result(val1 + val2)`
-// }
+[@math]
