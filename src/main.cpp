@@ -1,4 +1,5 @@
 #include "parser/node/lex.hpp"
+#include "parser/node/parse.hpp"
 #include "parser/parse_error.hpp"
 #include "version.hpp"
 #include <iostream>
@@ -8,13 +9,9 @@ int main() {
 	("Node Parser version "_zs + VERSION).writeln(std::cout);
 	auto program_text = z::file::read("tests/nodes/math1.node");
 
-	auto tokens = parser::node::lex(program_text);
+	auto lexer = parser::node::lex(program_text);
+	auto ast = parser::node::parse(lexer);
 
-	try {
-		for (auto token : tokens) {
-			token.text.writeln(std::cout);
-		}
-	} catch (const parser::parse_error &e) {
-		("ERROR: "_zs + e.context.start + ", " + e.context.end + ": " + e.message).writeln(std::cout);
-	}
+	std::cout << "\nPARSED AST:\n" << std::endl;
+	ast->print(std::cout, 1);
 }
