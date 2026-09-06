@@ -28,4 +28,6 @@ enum {
 	KWD_EXTENDS,
 };
 
-}
+extern const char *const map[];
+
+} // namespace parser::node::tokens

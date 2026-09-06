@@ -4,8 +4,11 @@
 #include "tokens.hpp"
 #include <memory>
 
+#include "ast/node_decl.hpp"
 #include "ast/program.hpp"
 #include "ast/tag_decl.hpp"
+
+#define EXPECT(token_id) expect(lexer, tokens::token_id, tokens::map[tokens::token_id])
 
 namespace parser::node {
 
@@ -18,8 +21,8 @@ auto tag_decl(tokenizer &lexer) -> std::optional<ast_ref> {
 	auto node = ref<ast::tag_decl>();
 	node->range = tok.value().range;
 
-	expect(lexer, tokens::KWD_AS, "`as`");
-	auto name = expect(lexer, tokens::STRING, "a string");
+	EXPECT(KWD_AS);
+	auto name = EXPECT(STRING);
 
 	node->name = name;
 	node->range.end = name.range.end;
@@ -30,7 +33,7 @@ auto tag_decl(tokenizer &lexer) -> std::optional<ast_ref> {
 			node->description = desc.value();
 		}
 
-		auto brace = expect(lexer, tokens::RBRACE, "`}`");
+		auto brace = EXPECT(RBRACE);
 		node->range.end = brace.range.end;
 	}
 
@@ -44,7 +47,7 @@ auto tag_list(tokenizer &lexer) -> std::optional<z::core::array<token>> {
 
 	z::core::array<token> results;
 	do {
-		auto tag = expect(lexer, tokens::TAG, "<@tag>");
+		auto tag = EXPECT(TAG);
 		results.push(tag);
 		auto comma = accept(lexer, tokens::COMMA);
 
@@ -64,6 +67,22 @@ auto node_decl(tokenizer &lexer) -> std::optional<ast_ref> {
 	auto tags = tag_list(lexer);
 
 	auto tok = expect_if(lexer, tokens::KWD_NODE, "`node`", (bool)tags);
+	if (!tok) {
+		return {};
+	}
+
+	auto node = ref<ast::node_decl>();
+	node->range = tok.value().range;
+
+	if (tags) {
+		node->tags = tags.value();
+	}
+
+	node->name = EXPECT(IDENTIFIER);
+	EXPECT(KWD_AS);
+
+	node->description = EXPECT(STRING);
+
 	return {};
 }
 
