@@ -1,3 +1,11 @@
 @math as "Arithmetic"
 
 [@math]
+node add as "Add" {
+    "Add two numbers"
+
+    in val1: number as "V1"
+
+}
+
+include "tags.node"

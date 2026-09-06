@@ -4,6 +4,7 @@
 #include "tokens.hpp"
 #include <memory>
 
+#include "ast/include.hpp"
 #include "ast/node_decl.hpp"
 #include "ast/program.hpp"
 #include "ast/tag_decl.hpp"
@@ -11,6 +12,21 @@
 #define EXPECT(token_id) expect(lexer, tokens::token_id, tokens::map[tokens::token_id])
 
 namespace parser::node {
+
+auto include(tokenizer &lexer) -> std::optional<ast_ref> {
+	auto tok = accept(lexer, tokens::KWD_INCLUDE);
+	if (!tok) {
+		return {};
+	}
+
+	auto node = ref<ast::include>();
+	node->filename = EXPECT(STRING);
+
+	node->range.start = tok.value().range.start;
+	node->range.end = node->filename.range.end;
+
+	return node;
+}
 
 auto tag_decl(tokenizer &lexer) -> std::optional<ast_ref> {
 	auto tok = accept(lexer, tokens::TAG);
@@ -82,8 +98,13 @@ auto node_decl(tokenizer &lexer) -> std::optional<ast_ref> {
 	EXPECT(KWD_AS);
 
 	node->description = EXPECT(STRING);
+	EXPECT(LBRACE);
 
-	return {};
+	node->help_text = accept(lexer, tokens::STRING);
+	auto tok2 = EXPECT(RBRACE);
+	node->range.end = tok2.range.end;
+
+	return node;
 }
 
 auto program(tokenizer &lexer) -> ast_ref {
@@ -92,7 +113,7 @@ auto program(tokenizer &lexer) -> ast_ref {
 
 	std::optional<ast_ref> child;
 	do {
-		child = accept(lexer, {tag_decl, node_decl});
+		child = accept(lexer, {tag_decl, node_decl, include});
 
 		if (!child) {
 			if (lexer.empty()) {
@@ -102,7 +123,7 @@ auto program(tokenizer &lexer) -> ast_ref {
 
 			// Unexpected token
 			auto tok = lexer.existing_token();
-			throw parse_error(("Expected a node or tag definition but found "_zs + symbol(tok) + "."), lexer.get_span());
+			throw parse_error(("Expected a node definition, tag definition or include, but found "_zs + symbol(tok) + "."), lexer.get_span());
 		}
 
 		node->children.push(child.value());
