@@ -24,7 +24,7 @@ const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
 
 #define CHAR_TOKEN(chr, id) \
 	if (c == chr) { \
-		return token{tokens::id, span{state.index, state.index++}, c}; \
+		return token{tokens::id, span{state.index, ++state.index}, c}; \
 	}
 
 #define CHECK_TOKEN(id) CHECK_TOKEN_WITH(id, match.str())
@@ -35,7 +35,7 @@ const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
 		state.index += match.length(); \
 		return token{ \
 			tokens::id, \
-			span{old_index, state.index - 1}, \
+			span{old_index, state.index}, \
 			match_expr, \
 		}; \
 	}
@@ -68,7 +68,7 @@ auto get_token(programText &state) -> std::optional<token> {
 			if (c == read_until) {
 				return token{
 					c == '"' ? tokens::STRING : tokens::CODE,
-					span{read_until_index, state.index - 1},
+					span{read_until_index, state.index},
 					text.substr(read_until_index + 1, state.index - read_until_index - 2),
 				};
 			}
@@ -121,7 +121,7 @@ auto get_token(programText &state) -> std::optional<token> {
 		state.index = text.length();
 		return token{
 			read_until == '"' ? tokens::STRING : tokens::CODE,
-			span{read_until_index, state.index - 1},
+			span{read_until_index, state.index},
 			text.substr(read_until_index + 1, state.index - read_until_index - 1),
 		};
 	}

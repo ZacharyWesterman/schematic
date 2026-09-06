@@ -29,9 +29,20 @@ context::context(std::istream &stream, span range) : line{0, 0}, col{range.start
 			line.end++;
 			col.end -= char_ct;
 		} else {
+			// Read the last line, then exit.
+			if (text) {
+				text += '\n';
+			}
+			text += this_line;
 			break;
 		}
 	}
+
+	// Make line and column start at 1 instead of 0.
+	line.start++;
+	line.end++;
+	col.start++;
+	col.end++;
 }
 
 } // namespace parser
