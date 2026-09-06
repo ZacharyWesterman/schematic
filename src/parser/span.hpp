@@ -3,7 +3,7 @@
 namespace parser {
 
 struct span {
-	int start;
+	int begin;
 	int end;
 };
 

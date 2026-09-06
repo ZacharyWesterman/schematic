@@ -22,7 +22,7 @@ auto include(tokenizer &lexer) -> std::optional<ast_ref> {
 	auto node = ref<ast::include>();
 	node->filename = EXPECT(STRING);
 
-	node->range.start = tok.value().range.start;
+	node->range.begin = tok.value().range.begin;
 	node->range.end = node->filename.range.end;
 
 	return node;

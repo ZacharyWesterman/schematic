@@ -21,7 +21,7 @@ int main() {
 	} catch (const parser::parse_error &e) {
 		auto ctx = parser::context(file, e.range);
 
-		std::cerr << "\nERROR: " << ctx.line.start << ", " << ctx.col.start;
+		std::cerr << "\nERROR: " << ctx.line.begin << ", " << ctx.col.begin;
 		std::cerr << " to " << ctx.line.end << ", " << ctx.col.end;
 		std::cerr << ": " << e.message << std::endl;
 
