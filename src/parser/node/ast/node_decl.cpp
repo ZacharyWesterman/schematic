@@ -32,6 +32,18 @@ auto node_decl::print(std::ostream &stream, int indent) -> void {
 		}
 		(indent_text + "]").writeln(stream);
 	}
+
+	if (outputs.length()) {
+		(indent_text + "outputs: [").writeln(stream);
+		for (auto i : outputs) {
+			i->print(stream, indent + 2);
+		}
+		(indent_text + "]").writeln(stream);
+	}
+
+	for (auto i : includes) {
+		i->print(stream, indent + 1);
+	}
 }
 
 } // namespace parser::node::ast

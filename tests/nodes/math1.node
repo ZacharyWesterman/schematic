@@ -8,6 +8,11 @@ node add as "Add" {
         decoration: shitto,
     }
 
+    out result: number as "Result"
+
+    include "test"
+
+    `some code`
 }
 
 include "tags.node"

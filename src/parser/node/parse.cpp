@@ -194,15 +194,19 @@ auto node_decl(tokenizer &lexer) -> optional<ast_ref> {
 			continue;
 		}
 
-		var = output(lexer);
-		if (var) {
+		if ((var = output(lexer))) {
 			node->outputs.push(var.value());
 			continue;
 		}
 
-		auto icl = include(lexer);
-		if (icl) {
+		if (auto icl = include(lexer)) {
 			node->includes.push(icl.value());
+			continue;
+		}
+
+		if (auto code_block = ACCEPT(CODE)) {
+			node->code_blocks.push(code_block.value());
+			continue;
 		}
 
 		// Unexpected token
