@@ -4,7 +4,9 @@
 node add as "Add" {
     "Add two numbers"
 
-    in val1: number as "V1"
+    in val1: number as "V1" {
+        decoration: shitto,
+    }
 
 }
 

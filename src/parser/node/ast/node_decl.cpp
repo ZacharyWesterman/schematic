@@ -3,11 +3,11 @@
 
 namespace parser::node::ast {
 
-auto text(token tok) -> zstring {
+static auto text(token tok) -> zstring {
 	return tok.text;
 }
 
-auto join(const zstring &a, const zstring &b) -> zstring {
+static auto join(const zstring &a, const zstring &b) -> zstring {
 	return a + ", " + b;
 }
 
@@ -23,6 +23,14 @@ auto node_decl::print(std::ostream &stream, int indent) -> void {
 
 	if (help_text) {
 		(indent_text + "help-text: " + help_text.value().text).writeln(stream);
+	}
+
+	if (inputs.length()) {
+		(indent_text + "inputs: [").writeln(stream);
+		for (auto i : inputs) {
+			i->print(stream, indent + 2);
+		}
+		(indent_text + "]").writeln(stream);
 	}
 }
 
