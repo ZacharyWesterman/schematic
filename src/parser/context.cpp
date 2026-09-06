@@ -1,24 +1,37 @@
 #include "context.hpp"
-#include <iostream>
 
 namespace parser {
 
-context::context(const zstring &text, span range) {
-	zstring prev = text.substr(0, range.start);
-	int lines_before = prev.count("\n");
+context::context(std::istream &stream, span range) : line{0, 0}, col{range.start, range.end} {
+	stream.seekg(std::ios_base::beg);
 
-	zstring inside = text.substr(range.start, range.end);
-	int lines_inside = inside.count("\n");
+	int start_index = 0;
+	int end_index = 0;
+	zstring this_line;
+	while (!stream.eof()) {
+		this_line.read(stream, '\n');
+		int char_ct = this_line.length() + 1; // Account for the '\n' character
 
-	line.start = lines_before + 1;
-	int pos = prev.findLast("\n");
-	col.start = (pos < 0 ? prev.length() + 1 : pos) + 1;
+		if (start_index + char_ct < range.start) {
+			// Skip everything before the begin line
+			start_index += char_ct;
+			end_index = start_index;
+			line.end = line.start += 1;
+			col.start -= char_ct;
+			col.end -= char_ct;
+		} else if (end_index + char_ct < range.end) {
+			// Include everything inside context
+			if (text) {
+				text += '\n';
+			}
+			text += this_line;
 
-	std::cout << lines_before << std::endl;
-
-	line.end = line.start + lines_inside;
-	pos = inside.findLast("\n");
-	col.end = pos < 0 ? col.start - 1 + inside.length() : inside.length() - pos;
+			line.end++;
+			col.end -= char_ct;
+		} else {
+			break;
+		}
+	}
 }
 
 } // namespace parser

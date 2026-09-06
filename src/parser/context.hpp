@@ -1,6 +1,7 @@
 #pragma once
 
 #include "span.hpp"
+#include <istream>
 #include <z/core/string.hpp>
 
 namespace parser {
@@ -8,8 +9,9 @@ namespace parser {
 struct context {
 	span line;
 	span col;
+	zstring text;
 
-	context(const zstring &text, span range);
+	context(std::istream &stream, span range);
 };
 
 } // namespace parser
