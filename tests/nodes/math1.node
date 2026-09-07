@@ -1,11 +1,14 @@
 @math as "Arithmetic"
+@vector_math in @math as "Vector Math"
 
 [@math]
 node add as "Add" {
     "Add two numbers"
 
     in val1: number as "V1" {
-        decoration: shitto,
+        decoration: 2 digits,
+        min: 0,
+        max: 1,
     }
 
     out result: number as "Result"

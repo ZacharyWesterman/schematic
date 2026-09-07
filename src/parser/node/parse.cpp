@@ -14,6 +14,7 @@
 #define ACCEPT(token_id) accept(lexer, tokens::token_id)
 #define EXPECT(token_id) expect(lexer, tokens::token_id, tokens::map[tokens::token_id])
 #define EXPECT_IF(token_id, condition) expect_if(lexer, tokens::token_id, tokens::map[tokens::token_id], (bool)(condition))
+#define M(token_id) tokens::map[token_id]
 
 using std::optional;
 using z::core::array;
@@ -43,6 +44,10 @@ auto tag_decl(tokenizer &lexer) -> optional<ast_ref> {
 
 	auto node = create<ast::tag_decl>();
 	node->range = tok.value().range;
+
+	if (ACCEPT(KWD_IN)) {
+		node->parent = EXPECT(TAG);
+	}
 
 	EXPECT(KWD_AS);
 	auto name = EXPECT(STRING);
@@ -100,8 +105,10 @@ auto constraint(tokenizer &lexer) -> opt_ref<ast::constraint> {
 	node->name = name.value();
 	EXPECT(COLON);
 
-	node->args.push(EXPECT(IDENTIFIER)); // Constraints must have at LEAST 1 value!
-	while (auto arg = ACCEPT(IDENTIFIER)) {
+	// Constraints must have at LEAST 1 value!
+	node->args.push(expect(lexer, {tokens::IDENTIFIER, tokens::NUMBER}, {M(tokens::IDENTIFIER), M(tokens::NUMBER)}));
+	std::optional<token> arg;
+	while ((arg = ACCEPT(IDENTIFIER)) || (arg = ACCEPT(NUMBER))) {
 		node->args.push(arg.value());
 	}
 

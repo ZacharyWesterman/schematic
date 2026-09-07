@@ -39,6 +39,34 @@ auto expect(tokenizer &lexer, int token_id, const zstring &expected_symbol) -> t
 	return result.value();
 }
 
+auto expect(tokenizer &lexer, std::initializer_list<int> token_ids, std::initializer_list<const char *> expected_symbols) -> token {
+	for (int token_id : token_ids) {
+		auto result = accept(lexer, token_id);
+		if (result) {
+			return result.value();
+		}
+	}
+
+	auto tok = lexer.existing_token();
+	auto iter = expected_symbols.begin();
+	zstring msg = "Expected "_zs + *iter;
+
+	if (expected_symbols.size() > 1) {
+		iter++;
+		for (size_t i = 1; i < expected_symbols.size() - 1; i++) {
+			msg += ", ";
+			msg += *iter;
+			iter++;
+		}
+		msg += " or ";
+		msg += *iter;
+	}
+
+	msg += " but found ";
+	msg += symbol(tok);
+	throw parse_error(msg, lexer.get_span());
+}
+
 auto expect(tokenizer &lexer, parse_rule rule, const zstring &expected_symbol) -> ast_ref {
 	auto result = rule(lexer);
 

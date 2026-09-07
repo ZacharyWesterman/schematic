@@ -8,6 +8,7 @@ namespace parser::node::ast {
 struct tag_decl : public ast_node {
 	token name;
 	token description;
+	std::optional<token> parent;
 
 	auto print(std::ostream &stream, int indent) -> void;
 };
