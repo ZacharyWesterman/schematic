@@ -17,7 +17,7 @@ node add as "Add" {
 
     `some code`
 
-    on val1 `
+    on val1, !tick `
         output_result(123)
     `
 }

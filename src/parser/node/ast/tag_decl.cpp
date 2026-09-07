@@ -12,7 +12,7 @@ auto tag_decl::print(std::ostream &stream, int indent) -> void {
 		(indent_text + "parent: " + parent.value().text).writeln(stream);
 	}
 	if (help_text) {
-		(indent_text + "desc: " + help_text.value().text).writeln(stream);
+		(indent_text + "help-text: " + help_text.value().text).writeln(stream);
 	}
 }
 
