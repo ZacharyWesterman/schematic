@@ -19,7 +19,7 @@ auto node_decl::print(std::ostream &stream, int indent) -> void {
 	if (description.text) {
 		(indent_text + "desc: " + description.text).writeln(stream);
 	}
-	(indent_text + "tags: " + tags.map<zstring>(text).reduce({}, join)).writeln(stream);
+	(indent_text + "tags: " + tags.map<zstring>(text).reduce(join)).writeln(stream);
 
 	if (help_text) {
 		(indent_text + "help-text: " + help_text.value().text).writeln(stream);
