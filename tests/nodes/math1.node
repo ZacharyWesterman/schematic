@@ -16,6 +16,10 @@ node add as "Add" {
     include "test"
 
     `some code`
+
+    on val1 `
+        output_result(123)
+    `
 }
 
 include "tags.node"

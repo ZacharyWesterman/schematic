@@ -2,14 +2,13 @@
 
 #include "../../ast_node.hpp"
 #include "../../token.hpp"
+#include "constraint.hpp"
 
 namespace parser::node::ast {
 
-struct tag_decl : public ast_node {
-	token name;
-	token description;
-	std::optional<token> help_text;
-	std::optional<token> parent;
+struct event : public ast_node {
+	z::core::array<token> triggers;
+	token code_block;
 
 	auto print(std::ostream &stream, int indent) -> void;
 };

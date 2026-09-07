@@ -41,6 +41,14 @@ auto node_decl::print(std::ostream &stream, int indent) -> void {
 		(indent_text + "]").writeln(stream);
 	}
 
+	if (events.length()) {
+		(indent_text + "events: [").writeln(stream);
+		for (auto i : events) {
+			i->print(stream, indent + 2);
+		}
+		(indent_text + "]").writeln(stream);
+	}
+
 	for (auto i : includes) {
 		i->print(stream, indent + 1);
 	}

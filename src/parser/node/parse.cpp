@@ -5,16 +5,18 @@
 #include <memory>
 
 #include "ast/constraint.hpp"
+#include "ast/event.hpp"
 #include "ast/include.hpp"
 #include "ast/node_decl.hpp"
 #include "ast/program.hpp"
 #include "ast/tag_decl.hpp"
 #include "ast/variable.hpp"
 
+#define M(token_id) tokens::map[token_id]
 #define ACCEPT(token_id) accept(lexer, tokens::token_id)
 #define EXPECT(token_id) expect(lexer, tokens::token_id, tokens::map[tokens::token_id])
+#define EXPECT_EITHER(token1_id, token2_id) expect(lexer, {tokens::token1_id, tokens::token2_id}, {tokens::map[tokens::token1_id], tokens::map[tokens::token2_id]})
 #define EXPECT_IF(token_id, condition) expect_if(lexer, tokens::token_id, tokens::map[tokens::token_id], (bool)(condition))
-#define M(token_id) tokens::map[token_id]
 
 using std::optional;
 using z::core::array;
@@ -44,21 +46,20 @@ auto tag_decl(tokenizer &lexer) -> optional<ast_ref> {
 
 	auto node = create<ast::tag_decl>();
 	node->range = tok.value().range;
+	node->name = tok.value();
 
 	if (ACCEPT(KWD_IN)) {
 		node->parent = EXPECT(TAG);
 	}
 
 	EXPECT(KWD_AS);
-	auto name = EXPECT(STRING);
-
-	node->name = name;
-	node->range.end = name.range.end;
+	node->description = EXPECT(STRING);
+	node->range.end = node->description.range.end;
 
 	if (accept(lexer, tokens::LBRACE)) {
 		auto desc = accept(lexer, tokens::STRING);
 		if (desc) {
-			node->description = desc.value();
+			node->help_text = desc.value();
 		}
 
 		auto brace = EXPECT(RBRACE);
@@ -93,6 +94,26 @@ auto tag_list(tokenizer &lexer) -> optional<array<token>> {
 	} while (true);
 
 	return results;
+}
+
+auto event(tokenizer &lexer) -> opt_ref<ast::event> {
+	auto tok = ACCEPT(KWD_ON);
+	if (!tok) {
+		return {};
+	}
+
+	auto node = create<ast::event>();
+	node->range = tok.value().range;
+	node->triggers.push(EXPECT_EITHER(IDENTIFIER, EVENT));
+
+	// Does NOT allow trailing comma.
+	while (ACCEPT(COMMA)) {
+		node->triggers.push(EXPECT_EITHER(IDENTIFIER, EVENT));
+	}
+
+	node->code_block = EXPECT(CODE);
+	node->range.end = node->code_block.range.end;
+	return node;
 }
 
 auto constraint(tokenizer &lexer) -> opt_ref<ast::constraint> {
@@ -216,9 +237,14 @@ auto node_decl(tokenizer &lexer) -> optional<ast_ref> {
 			continue;
 		}
 
+		if (auto evt = event(lexer)) {
+			node->events.push(evt.value());
+			continue;
+		}
+
 		// Unexpected token
 		auto tok = lexer.existing_token();
-		throw parse_error(("Expected an input, output, code block or include, but found "_zs + symbol(tok) + "."), lexer.get_span());
+		throw parse_error(("Expected an input, output, event, code block or include, but found "_zs + symbol(tok) + "."), lexer.get_span());
 	}
 
 	node->range.end = close_brace.value().range.end;
