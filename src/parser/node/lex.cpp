@@ -19,8 +19,8 @@ const std::regex KWD_ON("^on\\b");
 const std::regex KWD_INCLUDE("^include\\b");
 const std::regex KWD_PARTIAL("^partial\\b");
 const std::regex KWD_EXTENDS("^extends\\b");
-const std::regex COMMENT("^//[^\n]*");
-const std::regex COMMENT_MULTILINE("^/\\*.*($|\\*/)");
+const std::regex COMMENT("^//.*");
+const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::regex_constants::multiline);
 
 #define CHAR_TOKEN(chr, id) \
 	if (c == chr) { \
@@ -92,7 +92,7 @@ auto get_token(programText &state) -> std::optional<token> {
 		std::cmatch match;
 
 		// Skip whitespace and comments
-		if (std::regex_search(str, match, WHITESPACE) || std::regex_search(str, match, COMMENT) || std::regex_search(str, match, COMMENT_MULTILINE)) {
+		if (std::regex_search(str, match, WHITESPACE) || std::regex_search(str, match, COMMENT)) {
 			state.index += match.length();
 			continue;
 		}
@@ -112,6 +112,11 @@ auto get_token(programText &state) -> std::optional<token> {
 		CHECK_TOKEN_WITH_VALUE(NUMBER_HEX, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(16))
 		CHECK_TOKEN_WITH_VALUE(NUMBER_OCT, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(8))
 		CHECK_TOKEN_WITH_VALUE(NUMBER_BIN, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(2))
+
+		if (std::regex_search(str, match, COMMENT_MULTILINE)) {
+			state.index += match.length();
+			continue;
+		}
 
 		throw parse_error("Unknown character `"_zs + c + "`", {state.index, state.index++});
 	}

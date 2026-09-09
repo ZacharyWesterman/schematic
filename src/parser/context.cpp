@@ -2,7 +2,7 @@
 
 namespace parser {
 
-context::context(std::istream &stream, span range) : line{0, 0}, col{range.begin, range.end} {
+context::context(std::istream &stream, span range) : line{1, 1}, col{range.begin + 1, range.end + 1} {
 	stream.seekg(std::ios_base::beg);
 
 	int start_index = 0;
@@ -12,14 +12,14 @@ context::context(std::istream &stream, span range) : line{0, 0}, col{range.begin
 		this_line.read(stream, '\n');
 		int char_ct = this_line.length() + 1; // Account for the '\n' character
 
-		if (start_index + char_ct < range.begin) {
+		if (start_index + char_ct <= range.begin) {
 			// Skip everything before the begin line
 			start_index += char_ct;
 			end_index = start_index;
 			line.end = line.begin += 1;
 			col.begin -= char_ct;
 			col.end -= char_ct;
-		} else if (end_index + char_ct < range.end) {
+		} else if (end_index + char_ct <= range.end) {
 			// Include everything inside context
 			if (text) {
 				text += '\n';
@@ -28,6 +28,7 @@ context::context(std::istream &stream, span range) : line{0, 0}, col{range.begin
 
 			line.end++;
 			col.end -= char_ct;
+			end_index += char_ct;
 		} else {
 			// Read the last line, then exit.
 			if (text) {
@@ -37,12 +38,6 @@ context::context(std::istream &stream, span range) : line{0, 0}, col{range.begin
 			break;
 		}
 	}
-
-	// Make line and column start at 1 instead of 0.
-	line.begin++;
-	line.end++;
-	col.begin++;
-	col.end++;
 }
 
 } // namespace parser
