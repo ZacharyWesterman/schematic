@@ -13,7 +13,7 @@ static auto join(const zstring &a, const zstring &b) -> zstring {
 
 auto constraint::print(std::ostream &stream, int indent) -> void {
 	auto indent_text = " "_zs.repeat(indent * 2);
-	auto argstr = args.map<zstring>(text).reduce({}, join);
+	auto argstr = args.map<zstring>(text).reduce(join);
 
 	(indent_text + "constraint [" + name.text + "] = " + argstr).writeln(stream);
 	indent_text += "  ";

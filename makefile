@@ -87,7 +87,7 @@ CXXFLAGS = -std=$(STD) $(CXXTARGET) \
 
 LFLAGS = $(CXXTARGET) -lzed $(EXTRA_LFLAGS)
 
-STD = c++17
+STD = c++23
 
 OLEVEL = $(OPT)
 
