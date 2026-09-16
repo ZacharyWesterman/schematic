@@ -19,11 +19,10 @@ struct ast_node : public std::enable_shared_from_this<ast_node> {
 
 	virtual ~ast_node() = default;
 
-	std::shared_ptr<ast_node> get_shared() {
-		return shared_from_this();
-	}
+	std::shared_ptr<ast_node> get_shared();
 
 	virtual auto print(std::ostream &stream, int indent) -> void = 0;
+	virtual auto validate() const -> bool;
 };
 
 typedef std::shared_ptr<ast_node> ast_ref;
