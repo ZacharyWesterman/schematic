@@ -1,6 +1,3 @@
-@math as "Arithmetic"
-@vector_math in @math as "Vector Math"
-
 [@math]
 node add as "Add" {
     "Add two numbers"
@@ -13,13 +10,12 @@ node add as "Add" {
 
     out result: number as "Result"
 
-    include "test"
-
-    `some code`
+    `
+    --some code that the node needs for it to work
+    `
 
     on val1, !tick `
         output_result(123)
     `
 }
 
-include "tags.node"

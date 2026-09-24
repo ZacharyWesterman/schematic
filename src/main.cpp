@@ -10,16 +10,20 @@
 
 int main() {
 	("Node Parser version "_zs + VERSION).writeln(std::cout);
-	auto program_text = z::file::read("tests/nodes/math1.node");
-	auto lexer = parser::node::lex(program_text);
 
-	auto file = std::ifstream("tests/nodes/math1.node");
+	zstring dirname = "tests/nodes";
+	auto gen = z::file::listFiles(dirname, "node").map<zstring>([&dirname](auto i) { return dirname + "/" + i; });
+	for (auto filename : gen) {
+		auto program_text = z::file::read(filename);
+		auto file = std::ifstream(filename.cstring());
+		auto lexer = parser::node::lex(program_text);
 
-	try {
-		auto ast = parser::node::parse(lexer);
-		std::cout << "\nPARSED AST:\n" << std::endl;
-		ast->print(std::cout, 1);
-	} catch (const parser::parse_error &error) {
-		parser::print_error(file, error);
+		try {
+			auto ast = parser::node::parse(lexer);
+			std::cout << "\nPARSED AST:\n" << std::endl;
+			ast->print(std::cout, 1);
+		} catch (const parser::parse_error &error) {
+			parser::print_error(file, error);
+		}
 	}
 }

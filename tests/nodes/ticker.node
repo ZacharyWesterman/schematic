@@ -1,0 +1,19 @@
+[@time]
+node ticker as "Ticker" {
+    out init: none as "Init"
+    out tick: number as "Tick"
+
+    `
+    local tick_count = 0
+    `
+
+    on !init `
+        tick_count = 0
+        output_init()
+    `
+
+    on !tick `
+        tick_count = tick_count + 1
+        output_tick(tick_count)
+    `
+}

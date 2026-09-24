@@ -45,6 +45,17 @@ Validations needed:
 
 - only `!tick` and `!init` events are supported currently.
 
+- no duplicate node names!
+
+- includes
+    - in-node includes can only contain *supported* source files (e.g. `.cpp`/`.hpp` or `.lua`, depending on how we go with this).
+    - redundant in-node includes *in the same node* are an error.
+    - redundant in-node includes *in separate nodes* are ok, and should map to the same memory location, src block etc. to save on space.
+
+- Lua source needs to compile correctly!
+
 - tags:
     - if tag has a parent, the parent tag must exist!
     - no circular parent routes! e.g. `@1 in @2 ... @2 in @1` is not allowed.
+    - when node is tagged, make sure tag exists (maybe only warn about missing tag?)
+    - no duplicate tags!

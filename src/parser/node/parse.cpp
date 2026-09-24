@@ -257,7 +257,7 @@ auto program(tokenizer &lexer) -> ast_ref {
 
 	optional<ast_ref> child;
 	do {
-		child = accept(lexer, {tag_decl, node_decl, include});
+		child = accept(lexer, {tag_decl, node_decl});
 
 		if (!child) {
 			if (lexer.empty()) {
@@ -267,7 +267,7 @@ auto program(tokenizer &lexer) -> ast_ref {
 
 			// Unexpected token
 			auto tok = lexer.existing_token();
-			throw parse_error(("Expected a node definition, tag definition or include, but found "_zs + symbol(tok) + "."), lexer.get_span());
+			throw parse_error(("Expected a node or tag definition, but found "_zs + symbol(tok) + "."), lexer.get_span());
 		}
 
 		node->children.push(child.value());
