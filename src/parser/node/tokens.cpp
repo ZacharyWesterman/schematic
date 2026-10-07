@@ -25,8 +25,6 @@ const char *const map[] = {
     "`out`", // KWD_OUT
     "`on`", // KWD_ON
     "`include`", // KWD_INCLUDE
-    "`partial`", // KWD_PARTIAL
-    "`extends`", // KWD_EXTENDS
 };
 /* clang-format on */
 

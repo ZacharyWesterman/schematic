@@ -17,8 +17,6 @@ const std::regex KWD_IN("^in\\b");
 const std::regex KWD_OUT("^out\\b");
 const std::regex KWD_ON("^on\\b");
 const std::regex KWD_INCLUDE("^include\\b");
-const std::regex KWD_PARTIAL("^partial\\b");
-const std::regex KWD_EXTENDS("^extends\\b");
 const std::regex COMMENT("^//.*");
 const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::regex_constants::multiline);
 
@@ -105,8 +103,6 @@ auto get_token(programText &state) -> std::optional<token> {
 		CHECK_TOKEN(KWD_OUT)
 		CHECK_TOKEN(KWD_ON)
 		CHECK_TOKEN(KWD_INCLUDE)
-		CHECK_TOKEN(KWD_PARTIAL)
-		CHECK_TOKEN(KWD_EXTENDS)
 		CHECK_TOKEN(IDENTIFIER)
 		CHECK_TOKEN_WITH_VALUE(NUMBER_DEC, NUMBER, zstring(match.str()), replace("_", "").floating())
 		CHECK_TOKEN_WITH_VALUE(NUMBER_HEX, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(16))

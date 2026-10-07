@@ -24,8 +24,6 @@ enum {
 	KWD_OUT,
 	KWD_ON,
 	KWD_INCLUDE,
-	KWD_PARTIAL,
-	KWD_EXTENDS,
 };
 
 extern const char *const map[];
