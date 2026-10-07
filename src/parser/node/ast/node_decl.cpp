@@ -1,4 +1,5 @@
 #include "node_decl.hpp"
+#include "../../../libs/luau.hpp"
 #include "../../parse_error.hpp"
 #include "../tokens.hpp"
 #include <z/core/string.hpp>
@@ -107,7 +108,23 @@ auto node_decl::validate() const -> void {
 				}
 			}
 		}
+
+		event->validate();
 	}
+
+	// Make sure all code blocks at least compile.
+	auto state = luaL_newstate();
+	for (auto block : code_blocks) {
+		size_t chunksize = 0;
+		auto chunk = luau_compile(block.text.cstring(), block.text.length(), nullptr, &chunksize);
+		int error_code = luau_load(state, "code block", chunk, chunksize, 0);
+		if (error_code) {
+			int index = lua_gettop(state);
+			auto error_msg = lua_tostring(state, index);
+			throw parse_error("Lua error in `"_zs + name.text + "` node: " + error_msg, block.range);
+		}
+	}
+	lua_close(state);
 }
 
 } // namespace parser::node::ast
