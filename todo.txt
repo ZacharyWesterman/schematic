@@ -15,17 +15,16 @@ Validations needed:
     - any
 - Should sum types be allowed? e.g. `text|number`... Not for now.
 
-- Each i/o datatype can only have specific constraints.
-    - ALL: can have `default` value. (maybe?)
+- [x] Each i/o datatype can only have specific constraints.
     - none
         - cannot have ANY constraints
     - boolean
         - cannot have ANY constraints
     - number
-        - integer or float
-        - min (inclusive)
+        - integer: `true` or `false`
+        - min (inclusive): number
         - max (inclusive)
-        - decoration (time fmt, num decimals, etc)
+        - format: `time` or `XYZ digit(s)` (or just `XYZ`)
     - text
         - no constraints other than type?
     - number[]
