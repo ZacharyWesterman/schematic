@@ -2,18 +2,18 @@ Validations needed:
 
 - Ignore includes for now!
 
-- verify i/o datatypes. Only a few valid options:
+- [x] verify i/o datatypes. Only a few valid options:
     - none
     - boolean
     - number
-    - string
+    - text
     - number[]
-    - string[]
+    - text[]
     - color
     - sound
     - image
     - any
-- Should sum types be allowed? e.g. `string|number`... Not for now.
+- Should sum types be allowed? e.g. `text|number`... Not for now.
 
 - Each i/o datatype can only have specific constraints.
     - ALL: can have `default` value. (maybe?)
@@ -26,11 +26,11 @@ Validations needed:
         - min (inclusive)
         - max (inclusive)
         - decoration (time fmt, num decimals, etc)
-    - string
+    - text
         - no constraints other than type?
-    - number_array
+    - number[]
         - no constraints other than type?
-    - string_array
+    - text[]
         - no constraints other than type?
     - color
         - no constraints other than type-inherent.
@@ -42,11 +42,11 @@ Validations needed:
         - no constraints
 
 
-- inputs/outputs cannot have the same name!
+- [x] inputs/outputs cannot have the same name!
 
-- only `!tick` and `!init` events are supported currently.
+- [x] only `!tick` and `!init` events are supported currently.
 
-- no duplicate node names!
+- [x] no duplicate node names!
 
 - includes
     - in-node includes can only contain *supported* source files (e.g. `.cpp`/`.hpp` or `.lua`, depending on how we go with this).

@@ -14,6 +14,7 @@ struct variable : public ast_node {
 	bool array_type;
 
 	auto print(std::ostream &stream, int indent) -> void;
+	auto validate() const -> void override;
 };
 
 } // namespace parser::node::ast
