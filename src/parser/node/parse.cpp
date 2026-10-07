@@ -38,7 +38,7 @@ auto include(tokenizer &lexer) -> optional<ast_ref> {
 	return node;
 }
 
-auto tag_decl(tokenizer &lexer) -> optional<ast_ref> {
+auto tag_decl(tokenizer &lexer) -> opt_ref<ast::tag_decl> {
 	auto tok = accept(lexer, tokens::TAG);
 	if (!tok) {
 		return {};
@@ -199,7 +199,7 @@ auto output(tokenizer &lexer) -> opt_ref<ast::variable> {
 	return variable(lexer);
 }
 
-auto node_decl(tokenizer &lexer) -> optional<ast_ref> {
+auto node_decl(tokenizer &lexer) -> opt_ref<ast::node_decl> {
 	auto tags = tag_list(lexer);
 
 	auto tok = EXPECT_IF(KWD_NODE, tags);
@@ -261,29 +261,35 @@ auto node_decl(tokenizer &lexer) -> optional<ast_ref> {
 }
 
 auto program(tokenizer &lexer) -> ast_ref {
-	auto node = create<ast::program>();
-	node->range = lexer.get_span();
+	auto pgm = create<ast::program>();
+	pgm->range = lexer.get_span();
 
-	optional<ast_ref> child;
 	do {
-		child = accept(lexer, {tag_decl, node_decl});
-
-		if (!child) {
-			if (lexer.empty()) {
-				// End of program.
-				break;
-			}
-
-			// Unexpected token
-			auto tok = lexer.existing_token();
-			throw parse_error(("Expected a node or tag definition, but found "_zs + symbol(tok) + "."), lexer.get_span());
+		auto tag = tag_decl(lexer);
+		if (tag) {
+			pgm->tags.push(tag.value());
+			continue;
 		}
 
-		node->children.push(child.value());
+		auto node = node_decl(lexer);
+		if (node) {
+			pgm->nodes.push(node.value());
+			continue;
+		}
+
+		if (lexer.empty()) {
+			// End of program.
+			break;
+		}
+
+		// Unexpected token
+		auto tok = lexer.existing_token();
+		throw parse_error(("Expected a node or tag definition, but found "_zs + symbol(tok) + "."), lexer.get_span());
+
 	} while (true);
 
-	node->range.end = lexer.get_span().end;
-	return node;
+	pgm->range.end = lexer.get_span().end;
+	return pgm;
 }
 
 auto parse(tokenizer &lexer) -> ast_ref {

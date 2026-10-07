@@ -56,7 +56,7 @@ Validations needed:
 - Lua source needs to compile correctly!
 
 - tags:
-    - if tag has a parent, the parent tag must exist!
-    - no circular parent routes! e.g. `@1 in @2 ... @2 in @1` is not allowed.
-    - when node is tagged, make sure tag exists (maybe only warn about missing tag?)
-    - no duplicate tags!
+    - [x] if tag has a parent, the parent tag must exist!
+    - [x] no circular parent routes! e.g. `@1 in @2 ... @2 in @1` is not allowed.
+    - [x] when node is tagged, make sure tag exists (maybe only warn about missing tag?)
+    - [x] no duplicate tags!

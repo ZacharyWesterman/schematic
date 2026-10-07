@@ -15,9 +15,10 @@ auto parse_file(const zstring &filename) -> void {
 
 	try {
 		auto ast = parser::node::parse(lexer);
+		ast->validate();
+
 		std::cout << "\nPARSED AST:\n" << std::endl;
 		ast->print(std::cout, 1);
-		ast->validate();
 	} catch (const parser::parse_error &error) {
 		parser::print_error(file, error);
 	}
