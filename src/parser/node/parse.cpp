@@ -143,17 +143,26 @@ auto variable(tokenizer &lexer) -> ref<ast::variable> {
 	node->name = EXPECT(IDENTIFIER);
 	EXPECT(COLON);
 	node->type = EXPECT(IDENTIFIER);
+	node->array_type = false;
+
+	// `ident[]` indicates array type
+	if (ACCEPT(LBRACKET)) {
+		EXPECT(RBRACKET);
+		node->array_type = true;
+	}
+
 	EXPECT(KWD_AS);
 	node->description = EXPECT(STRING);
 
 	node->range.begin = node->name.range.begin;
 	node->range.end = node->description.range.end;
 
-	// No constraints
+	// Without constraints
 	if (!accept(lexer, tokens::LBRACE)) {
 		return node;
 	}
 
+	// With constraints
 	optional<token> close_brace;
 	while (!(close_brace = accept(lexer, tokens::RBRACE))) {
 		auto child = constraint(lexer);

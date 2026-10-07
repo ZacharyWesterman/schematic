@@ -7,8 +7,8 @@ Validations needed:
     - boolean
     - number
     - string
-    - number_array
-    - string_array
+    - number[]
+    - string[]
     - color
     - sound
     - image
@@ -16,6 +16,7 @@ Validations needed:
 - Should sum types be allowed? e.g. `string|number`... Not for now.
 
 - Each i/o datatype can only have specific constraints.
+    - ALL: can have `default` value. (maybe?)
     - none
         - cannot have ANY constraints
     - boolean

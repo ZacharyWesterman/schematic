@@ -11,6 +11,7 @@ struct variable : public ast_node {
 	token type;
 	token description;
 	z::core::array<ref<constraint>> constraints;
+	bool array_type;
 
 	auto print(std::ostream &stream, int indent) -> void;
 };

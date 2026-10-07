@@ -5,7 +5,7 @@ namespace parser::node::ast {
 
 auto variable::print(std::ostream &stream, int indent) -> void {
 	auto indent_text = " "_zs.repeat(indent * 2);
-	(indent_text + "var [" + name.text + ", " + type.text + "] = " + description.text).writeln(stream);
+	(indent_text + "var [" + name.text + ", " + type.text + (array_type ? " array" : "") + "] = " + description.text).writeln(stream);
 	for (auto i : constraints) {
 		i->print(stream, indent + 1);
 	}

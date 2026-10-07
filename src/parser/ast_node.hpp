@@ -22,7 +22,7 @@ struct ast_node : public std::enable_shared_from_this<ast_node> {
 	std::shared_ptr<ast_node> get_shared();
 
 	virtual auto print(std::ostream &stream, int indent) -> void = 0;
-	virtual auto validate() const -> bool;
+	virtual auto validate() const -> void;
 };
 
 typedef std::shared_ptr<ast_node> ast_ref;
