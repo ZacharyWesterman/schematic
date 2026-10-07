@@ -6,14 +6,13 @@ Validations needed:
     - none
     - boolean
     - number
-    - text
+    - string
     - number[]
-    - text[]
+    - string[]
     - color
     - sound
     - image
     - any
-- Should sum types be allowed? e.g. `text|number`... Not for now.
 
 - [x] Each i/o datatype can only have specific constraints.
     - none
@@ -25,11 +24,11 @@ Validations needed:
         - min (inclusive): number
         - max (inclusive)
         - format: `time` or `XYZ digit(s)` (or just `XYZ`)
-    - text
+    - string
         - no constraints other than type?
     - number[]
         - no constraints other than type?
-    - text[]
+    - string[]
         - no constraints other than type?
     - color
         - no constraints other than type-inherent.

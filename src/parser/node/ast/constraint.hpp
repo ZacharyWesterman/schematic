@@ -10,7 +10,7 @@ struct constraint : public ast_node {
 	z::core::array<token> args;
 
 	auto print(std::ostream &stream, int indent) -> void;
-	auto validate() const -> void override;
+	auto validate_type(const zstring &type, bool is_array) const -> void;
 };
 
 } // namespace parser::node::ast

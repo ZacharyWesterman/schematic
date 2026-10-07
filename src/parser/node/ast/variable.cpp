@@ -4,7 +4,7 @@
 #include <z/core/string.hpp>
 
 const z::core::array<zstring> valid_types = {
-	"none", "boolean", "number", "text", "color", "sound", "image", "any",
+	"none", "boolean", "number", "string", "color", "sound", "image", "any",
 };
 
 namespace parser::node::ast {
@@ -24,13 +24,8 @@ auto variable::validate() const -> void {
 	}
 
 	// Only strings and numbers have array variants
-	if (type.text != "text" && type.text != "number" && array_type) {
-		throw parse_error("Arrays of `"_zs + type.text + "` type are not supported. Only text arrays and number arrays are allowed.", type.range);
-	}
-
-	// Only numbers can have constraints (formatting, etc.)
-	if (type.text != "number" && constraints.length()) {
-		throw parse_error("Only numbers can have constraints.", type.range);
+	if (type.text != "string" && type.text != "number" && array_type) {
+		throw parse_error("Arrays of `"_zs + type.text + "` type are not supported. Only string arrays and number arrays are allowed.", type.range);
 	}
 
 	// Make sure all constraints are valid, and aren't specified multiple times.
@@ -49,7 +44,7 @@ auto variable::validate() const -> void {
 			}
 		}
 
-		constraints[i]->validate();
+		constraints[i]->validate_type(type.text, array_type);
 
 		if (name == "min") {
 			min = constraints[i]->args[0].value;

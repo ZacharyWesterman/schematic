@@ -127,9 +127,9 @@ auto constraint(tokenizer &lexer) -> opt_ref<ast::constraint> {
 	EXPECT(COLON);
 
 	// Constraints must have at LEAST 1 value!
-	node->args.push(expect(lexer, {tokens::IDENTIFIER, tokens::NUMBER}, {M(tokens::IDENTIFIER), M(tokens::NUMBER)}));
+	node->args.push(expect(lexer, {tokens::IDENTIFIER, tokens::NUMBER, tokens::STRING}, {M(tokens::IDENTIFIER), M(tokens::NUMBER), M(tokens::STRING)}));
 	std::optional<token> arg;
-	while ((arg = ACCEPT(IDENTIFIER)) || (arg = ACCEPT(NUMBER))) {
+	while ((arg = ACCEPT(IDENTIFIER)) || (arg = ACCEPT(NUMBER)) || (arg = ACCEPT(STRING))) {
 		node->args.push(arg.value());
 	}
 
