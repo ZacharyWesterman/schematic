@@ -9,6 +9,7 @@ struct include : public ast_node {
 	token filename;
 
 	auto print(std::ostream &stream, int indent) -> void;
+	auto validate() const -> void override;
 };
 
 } // namespace parser::node::ast

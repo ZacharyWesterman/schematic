@@ -38,7 +38,7 @@ auto include(tokenizer &lexer) -> optional<ast_ref> {
 	return node;
 }
 
-auto tag_decl(tokenizer &lexer) -> optional<ast_ref> {
+auto tag_decl(tokenizer &lexer) -> opt_ref<ast::tag_decl> {
 	auto tok = accept(lexer, tokens::TAG);
 	if (!tok) {
 		return {};
@@ -127,9 +127,9 @@ auto constraint(tokenizer &lexer) -> opt_ref<ast::constraint> {
 	EXPECT(COLON);
 
 	// Constraints must have at LEAST 1 value!
-	node->args.push(expect(lexer, {tokens::IDENTIFIER, tokens::NUMBER}, {M(tokens::IDENTIFIER), M(tokens::NUMBER)}));
+	node->args.push(expect(lexer, {tokens::IDENTIFIER, tokens::NUMBER, tokens::STRING}, {M(tokens::IDENTIFIER), M(tokens::NUMBER), M(tokens::STRING)}));
 	std::optional<token> arg;
-	while ((arg = ACCEPT(IDENTIFIER)) || (arg = ACCEPT(NUMBER))) {
+	while ((arg = ACCEPT(IDENTIFIER)) || (arg = ACCEPT(NUMBER)) || (arg = ACCEPT(STRING))) {
 		node->args.push(arg.value());
 	}
 
@@ -143,17 +143,26 @@ auto variable(tokenizer &lexer) -> ref<ast::variable> {
 	node->name = EXPECT(IDENTIFIER);
 	EXPECT(COLON);
 	node->type = EXPECT(IDENTIFIER);
+	node->array_type = false;
+
+	// `ident[]` indicates array type
+	if (ACCEPT(LBRACKET)) {
+		EXPECT(RBRACKET);
+		node->array_type = true;
+	}
+
 	EXPECT(KWD_AS);
 	node->description = EXPECT(STRING);
 
 	node->range.begin = node->name.range.begin;
 	node->range.end = node->description.range.end;
 
-	// No constraints
+	// Without constraints
 	if (!accept(lexer, tokens::LBRACE)) {
 		return node;
 	}
 
+	// With constraints
 	optional<token> close_brace;
 	while (!(close_brace = accept(lexer, tokens::RBRACE))) {
 		auto child = constraint(lexer);
@@ -190,7 +199,7 @@ auto output(tokenizer &lexer) -> opt_ref<ast::variable> {
 	return variable(lexer);
 }
 
-auto node_decl(tokenizer &lexer) -> optional<ast_ref> {
+auto node_decl(tokenizer &lexer) -> opt_ref<ast::node_decl> {
 	auto tags = tag_list(lexer);
 
 	auto tok = EXPECT_IF(KWD_NODE, tags);
@@ -252,29 +261,35 @@ auto node_decl(tokenizer &lexer) -> optional<ast_ref> {
 }
 
 auto program(tokenizer &lexer) -> ast_ref {
-	auto node = create<ast::program>();
-	node->range = lexer.get_span();
+	auto pgm = create<ast::program>();
+	pgm->range = lexer.get_span();
 
-	optional<ast_ref> child;
 	do {
-		child = accept(lexer, {tag_decl, node_decl});
-
-		if (!child) {
-			if (lexer.empty()) {
-				// End of program.
-				break;
-			}
-
-			// Unexpected token
-			auto tok = lexer.existing_token();
-			throw parse_error(("Expected a node or tag definition, but found "_zs + symbol(tok) + "."), lexer.get_span());
+		auto tag = tag_decl(lexer);
+		if (tag) {
+			pgm->tags.push(tag.value());
+			continue;
 		}
 
-		node->children.push(child.value());
+		auto node = node_decl(lexer);
+		if (node) {
+			pgm->nodes.push(node.value());
+			continue;
+		}
+
+		if (lexer.empty()) {
+			// End of program.
+			break;
+		}
+
+		// Unexpected token
+		auto tok = lexer.existing_token();
+		throw parse_error(("Expected a node or tag definition, but found "_zs + symbol(tok) + "."), lexer.get_span());
+
 	} while (true);
 
-	node->range.end = lexer.get_span().end;
-	return node;
+	pgm->range.end = lexer.get_span().end;
+	return pgm;
 }
 
 auto parse(tokenizer &lexer) -> ast_ref {

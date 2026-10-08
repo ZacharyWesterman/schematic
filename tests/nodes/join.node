@@ -1,0 +1,9 @@
+node join as "Join Array" {
+    "Join an array into a single string"
+
+    in trigger: none as "Join"
+    in array: string[] as "Array"
+    in delim: string as "Delimiter"
+
+    out result: string as "Result"
+}

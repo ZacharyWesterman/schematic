@@ -6,8 +6,6 @@ std::shared_ptr<ast_node> ast_node::get_shared() {
 	return shared_from_this();
 }
 
-auto ast_node::validate() const -> bool {
-	return true;
-}
+auto ast_node::validate() const -> void {}
 
 } // namespace parser

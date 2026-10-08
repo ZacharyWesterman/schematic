@@ -2,34 +2,33 @@ Validations needed:
 
 - Ignore includes for now!
 
-- verify i/o datatypes. Only a few valid options:
+- [x] verify i/o datatypes. Only a few valid options:
     - none
     - boolean
     - number
     - string
-    - number_array
-    - string_array
+    - number[]
+    - string[]
     - color
     - sound
     - image
     - any
-- Should sum types be allowed? e.g. `string|number`... Not for now.
 
-- Each i/o datatype can only have specific constraints.
+- [x] Each i/o datatype can only have specific constraints.
     - none
         - cannot have ANY constraints
     - boolean
         - cannot have ANY constraints
     - number
-        - integer or float
-        - min (inclusive)
+        - integer: `true` or `false`
+        - min (inclusive): number
         - max (inclusive)
-        - decoration (time fmt, num decimals, etc)
+        - format: `time` or `XYZ digit(s)` (or just `XYZ`)
     - string
         - no constraints other than type?
-    - number_array
+    - number[]
         - no constraints other than type?
-    - string_array
+    - string[]
         - no constraints other than type?
     - color
         - no constraints other than type-inherent.
@@ -41,11 +40,11 @@ Validations needed:
         - no constraints
 
 
-- inputs/outputs cannot have the same name!
+- [x] inputs/outputs cannot have the same name!
 
-- only `!tick` and `!init` events are supported currently.
+- [x] only `!tick` and `!init` events are supported currently.
 
-- no duplicate node names!
+- [x] no duplicate node names!
 
 - includes
     - in-node includes can only contain *supported* source files (e.g. `.cpp`/`.hpp` or `.lua`, depending on how we go with this).
@@ -55,7 +54,7 @@ Validations needed:
 - Lua source needs to compile correctly!
 
 - tags:
-    - if tag has a parent, the parent tag must exist!
-    - no circular parent routes! e.g. `@1 in @2 ... @2 in @1` is not allowed.
-    - when node is tagged, make sure tag exists (maybe only warn about missing tag?)
-    - no duplicate tags!
+    - [x] if tag has a parent, the parent tag must exist!
+    - [x] no circular parent routes! e.g. `@1 in @2 ... @2 in @1` is not allowed.
+    - [x] when node is tagged, make sure tag exists (maybe only warn about missing tag?)
+    - [x] no duplicate tags!

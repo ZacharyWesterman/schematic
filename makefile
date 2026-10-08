@@ -84,8 +84,9 @@ CXXFLAGS = -std=$(STD) $(CXXTARGET) \
 	-W -Wall -Wextra -Wno-psabi -Werror \
 	-pedantic -fexceptions \
 	$(EXTRA_CFLAGS)
+LUAUFLAGS = -std=$(STD) $(CXXTARGET) -Wno-bidi-chars
 
-LFLAGS = $(CXXTARGET) -lzed $(EXTRA_LFLAGS)
+LFLAGS = $(CXXTARGET) -lzed $(EXTRA_LFLAGS) -lm
 
 STD = c++23
 
@@ -138,6 +139,10 @@ obj/main.o: src/main.cpp
 obj/%.o: src/%.cpp src/%.hpp makefile
 	@$(MKDIR) $(dir $@)
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+obj/libs/luau.o: src/libs/luau.cpp src/libs/luau.hpp makefile
+	@$(MKDIR) $(dir $@)
+	$(CXX) $(LUAUFLAGS) -o $@ -c $<
 
 src/version.cpp:
 	echo "const char* VERSION = \"$(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)\";" > src/version.cpp

@@ -11,6 +11,7 @@ struct event : public ast_node {
 	token code_block;
 
 	auto print(std::ostream &stream, int indent) -> void;
+	auto validate() const -> void override;
 };
 
 } // namespace parser::node::ast

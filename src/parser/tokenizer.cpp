@@ -13,8 +13,8 @@ auto tokenizer::next() -> std::optional<token> {
 
 auto tokenizer::get_span() -> span {
 	return {
-		prev_index,
-		state.index,
+		prev_index + (empty() ? 0 : 1),
+		state.index + (empty() ? 0 : 1),
 	};
 }
 

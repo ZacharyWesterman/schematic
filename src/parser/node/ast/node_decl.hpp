@@ -21,6 +21,7 @@ struct node_decl : public ast_node {
 	z::core::array<ref<event>> events;
 
 	auto print(std::ostream &stream, int indent) -> void;
+	auto validate() const -> void override;
 };
 
 } // namespace parser::node::ast
