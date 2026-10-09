@@ -118,12 +118,10 @@ auto field(tokenizer &lexer) -> opt_ref<ast::field> {
 	return node;
 }
 
-auto constructor(tokenizer &lexer) -> ref<ast::constructor> {
-	auto tok = lexer.existing_token().value();
-
+auto constructor(tokenizer &lexer, token ident) -> ref<ast::constructor> {
 	auto node = create<ast::constructor>();
-	node->name = tok;
-	node->range = tok.range;
+	node->name = ident;
+	node->range = ident.range;
 	node->position = coords(lexer);
 	EXPECT(EQUALS);
 	node->node = EXPECT(IDENTIFIER);
@@ -163,10 +161,10 @@ auto blueprint(tokenizer &lexer) -> ref<ast::blueprint> {
 		}
 
 		// Only other top-levels start with an identifier.
-		if (ACCEPT(IDENTIFIER)) {
+		if (auto tok = ACCEPT(IDENTIFIER)) {
 
 			// If not a route, it must be a constructor.
-			blue->constructors.push(constructor(lexer));
+			blue->constructors.push(constructor(lexer, tok.value()));
 			continue;
 		}
 
