@@ -2,7 +2,7 @@ tick_node{0,0} = ticker(
     // No input values
 ) -> (
     // Output default values (only allowed for "none" outputs)
-    tick = string[]
+    tick = string[],
 )
 
 count_node{5,5} = count(
@@ -19,3 +19,15 @@ tick_node.tick ->
     | {1,2} -> count_node.count
     | {1,2} -> log_node.info
     | {1,2} -> log_node.trigger
+
+// vector := `{` value `,` value `}`
+// arg := ident `=` value
+/*
+value :=
+    | <number>
+    | <string>
+    | ident
+    | `[` (<number> | <string>)* `]`
+*/
+    
+// {}()[] -> = . ,

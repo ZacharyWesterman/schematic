@@ -1,0 +1,132 @@
+#include "lex.hpp"
+#include "../parse_error.hpp"
+#include "tokens.hpp"
+#include <regex>
+
+const std::regex IDENTIFIER("^[a-zA-Z_]\\w*");
+const std::regex WHITESPACE("^\\s+");
+const std::regex NUMBER_DEC("^-?(\\.[0-9_]+|[0-9][0-9_]*(\\.[0-9_]+)?)\\b");
+const std::regex NUMBER_HEX("^-?\\b0x[0-9a-fA-F_]*\\b");
+const std::regex NUMBER_OCT("^-?0c[0-7]*\\b");
+const std::regex NUMBER_BIN("^-?0b[01]+\\b");
+const std::regex ARROW("^\\->");
+const std::regex COMMENT("^//.*");
+const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::regex_constants::multiline);
+
+#define CHAR_TOKEN(chr, id) \
+	if (c == chr) { \
+		return token{ \
+			state.filename, \
+			tokens::id, \
+			span{state.index, ++state.index}, \
+			c, \
+		}; \
+	}
+
+#define CHECK_TOKEN(id) CHECK_TOKEN_WITH(id, match.str())
+
+#define CHECK_TOKEN_WITH(id, match_expr) \
+	if (std::regex_search(str, match, id)) { \
+		const int old_index = state.index; \
+		state.index += match.length(); \
+		return token{ \
+			state.filename, \
+			tokens::id, \
+			span{old_index, state.index}, \
+			match_expr, \
+		}; \
+	}
+
+#define CHECK_TOKEN_WITH_VALUE(id, out_id, match_expr, parse_expr) \
+	if (std::regex_search(str, match, id)) { \
+		const int old_index = state.index; \
+		state.index += match.length(); \
+		return token{ \
+			state.filename, tokens::out_id, span{old_index, state.index - 1}, match_expr, match_expr.parse_expr, \
+		}; \
+	}
+
+namespace parser::blueprint {
+
+auto get_token(programText &state) -> std::optional<token> {
+	const auto &text = state.text;
+
+	char read_until = '\0';
+	int read_until_index = 0;
+
+	while (text.length() > state.index) {
+		char c = text[state.index];
+
+		if (read_until) {
+			state.index++;
+			if (c == read_until) {
+				return token{
+					state.filename,
+					tokens::STRING,
+					span{read_until_index, state.index},
+					text.substr(read_until_index + 1, state.index - read_until_index - 2),
+				};
+			}
+			continue;
+		}
+
+		if (c == '"') {
+			read_until = c;
+			read_until_index = state.index++;
+			continue;
+		}
+
+		CHAR_TOKEN('[', LBRACKET)
+		CHAR_TOKEN(']', RBRACKET)
+		CHAR_TOKEN('{', LBRACE)
+		CHAR_TOKEN('}', RBRACE)
+		CHAR_TOKEN('(', LPAREN)
+		CHAR_TOKEN(')', RPAREN)
+		CHAR_TOKEN('=', EQUALS)
+		CHAR_TOKEN(',', COMMA)
+		CHAR_TOKEN('.', DOT)
+		CHAR_TOKEN('|', BAR)
+
+		const char *str = text.cstring() + state.index;
+		std::cmatch match;
+
+		// Skip whitespace and comments
+		if (std::regex_search(str, match, WHITESPACE) || std::regex_search(str, match, COMMENT)) {
+			state.index += match.length();
+			continue;
+		}
+
+		CHECK_TOKEN(ARROW)
+		CHECK_TOKEN(IDENTIFIER)
+		CHECK_TOKEN_WITH_VALUE(NUMBER_DEC, NUMBER, zstring(match.str()), replace("_", "").floating())
+		CHECK_TOKEN_WITH_VALUE(NUMBER_HEX, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(16))
+		CHECK_TOKEN_WITH_VALUE(NUMBER_OCT, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(8))
+		CHECK_TOKEN_WITH_VALUE(NUMBER_BIN, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(2))
+
+		if (std::regex_search(str, match, COMMENT_MULTILINE)) {
+			state.index += match.length();
+			continue;
+		}
+
+		throw parse_error("Unknown character `"_zs + c + "`", state.filename, {state.index, state.index++});
+	}
+
+	// Spit out any remaining string segments
+	if (read_until) {
+		state.index = text.length();
+		return token{
+			state.filename,
+			tokens::STRING,
+			span{read_until_index, state.index},
+			text.substr(read_until_index + 1, state.index - read_until_index - 1),
+		};
+	}
+
+	return {};
+}
+
+auto lex(const zstring &text, const zstring &filename) -> tokenizer {
+	return tokenizer({filename, text, 0}, get_token);
+}
+
+} // namespace parser::blueprint
