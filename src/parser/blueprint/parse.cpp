@@ -99,7 +99,10 @@ auto blueprint(tokenizer &lexer) -> ref<ast::blueprint> {
 
 		// Only other top-levels start with an identifier.
 		if (ACCEPT(IDENTIFIER)) {
-			auto constr = constructor(lexer);
+
+			// If not a route, it must be a constructor.
+			blue->constructors.push(constructor(lexer));
+			continue;
 		}
 
 		if (lexer.empty()) {

@@ -1,11 +1,11 @@
 my_node{0,1} = some_node "Node title (if not default)" (
     // Input defaults (these parentheses) are optional.
     // Input values are only allowed for non-"none" inputs.
-    input_name = "input value" //Type is deduced from the value.
+    // input_name = "input value" //Type is deduced from the value.
 ) -> (
     //Output defaults (the arrow and these parens) are optional.
     // Output values are only allowed for "none" outputs.
-    output_name = "output value" //Type is deduced from the value.
+    // output_name = "output value" //Type is deduced from the value.
 )
 
 // tick_node{0,0} = ticker "My ticker" (
