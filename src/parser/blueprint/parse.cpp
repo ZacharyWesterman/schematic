@@ -8,6 +8,8 @@
 #include "ast/comment.hpp"
 #include "ast/constructor.hpp"
 #include "ast/coords.hpp"
+#include "ast/field.hpp"
+#include "ast/value.hpp"
 
 #define M(token_id) tokens::map[token_id]
 #define ACCEPT(token_id) accept(lexer, tokens::token_id)
@@ -57,6 +59,61 @@ auto comment(tokenizer &lexer) -> opt_ref<ast::comment> {
 	return node;
 }
 
+auto array_value(tokenizer &lexer) -> optional<token> {
+	return accept(lexer, {tokens::NUMBER, tokens::STRING, tokens::BOOLEAN, tokens::COLOR});
+}
+
+auto field_args(tokenizer &lexer) -> ref<ast::value> {
+	auto node = create<ast::value>();
+
+	auto type = ACCEPT(IDENTIFIER);
+	if (type) {
+		// If a type name is given, this is for sure an array.
+		node->array_type = true;
+		EXPECT(LBRACKET);
+	} else {
+		node->array_type = ACCEPT(LBRACKET).has_value();
+	}
+	node->type = type;
+	node->range = type->range;
+
+	if (node->array_type) {
+		// If `[...]` is used, multiple values can be put between the brackets.
+		while (optional<token> val = array_value(lexer)) {
+			node->values.push(val.value());
+		}
+		EXPECT(RBRACKET);
+	} else if (auto val = array_value(lexer)) {
+		// Otherwise, only a single value is allowed.
+		node->values.push(val.value());
+	}
+
+	if (!type && !node->values.length()) {
+		auto tok = lexer.existing_token();
+		throw parse_error("Expected <type> or <value>, but found "_zs + symbol(tok), lexer.filename(), lexer.get_span());
+	}
+
+	return node;
+}
+
+auto field(tokenizer &lexer) -> opt_ref<ast::field> {
+	auto tok = ACCEPT(IDENTIFIER);
+	if (!tok) {
+		return {};
+	}
+
+	EXPECT(EQUALS);
+	auto node = create<ast::field>();
+	node->name = tok.value();
+	node->args = field_args(lexer);
+	node->range = {
+		tok.value().range.begin,
+		node->args->range.end,
+	};
+
+	return node;
+}
+
 auto constructor(tokenizer &lexer) -> ref<ast::constructor> {
 	auto tok = lexer.existing_token().value();
 
@@ -71,14 +128,18 @@ auto constructor(tokenizer &lexer) -> ref<ast::constructor> {
 
 	// Input values
 	if (ACCEPT(LPAREN)) {
-		// TODO!
+		while (auto child = field(lexer)) {
+			node->inputs.push(child.value());
+		}
 		node->range.end = EXPECT(RPAREN).range.end;
 	}
 
 	// Output defaults
 	if (ACCEPT(ARROW)) {
 		EXPECT(LPAREN);
-		// TODO!
+		while (auto child = field(lexer)) {
+			node->outputs.push(child.value());
+		}
 		node->range.end = EXPECT(RPAREN).range.end;
 	}
 

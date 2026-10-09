@@ -7,8 +7,14 @@ auto constructor::print(std::ostream &stream, int indent) -> void {
 	if (title) {
 		("  "_zs.repeat(indent + 1) + "title: " + title.value().text).writeln(stream);
 	}
-
 	position->print(stream, indent + 1);
+
+	for (auto i : inputs) {
+		i->print(stream, indent + 1);
+	}
+	for (auto i : outputs) {
+		i->print(stream, indent + 1);
+	}
 }
 
 } // namespace parser::blueprint::ast
