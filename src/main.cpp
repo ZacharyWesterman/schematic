@@ -1,4 +1,5 @@
 #include "parser/blueprint/lex.hpp"
+#include "parser/blueprint/parse.hpp"
 #include "parser/context.hpp"
 #include "parser/node/lex.hpp"
 #include "parser/node/parse.hpp"
@@ -48,9 +49,10 @@ auto parse_blueprints(const z::core::array<zstring> &filenames) -> void {
 		auto lexer = parser::blueprint::lex(program_text, filename);
 
 		try {
-			for (auto token : lexer) {
-				std::cout << token.text << std::endl;
-			}
+			auto ast = parser::blueprint::parse(lexer);
+
+			std::cout << "\nSCHEMATIC AST:\n" << std::endl;
+			ast->print(std::cout, 1);
 		} catch (const parser::parse_error &error) {
 			parser::print_error(error);
 		}

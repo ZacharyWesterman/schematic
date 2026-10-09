@@ -8,7 +8,7 @@ namespace parser::node::ast {
 struct include : public ast_node {
 	token source;
 
-	auto print(std::ostream &stream, int indent) -> void;
+	auto print(std::ostream &stream, int indent) -> void override;
 	auto validate() const -> void override;
 };
 

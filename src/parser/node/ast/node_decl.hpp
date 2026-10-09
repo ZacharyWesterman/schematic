@@ -20,7 +20,7 @@ struct node_decl : public ast_node {
 	z::core::array<token> code_blocks;
 	z::core::array<ref<event>> events;
 
-	auto print(std::ostream &stream, int indent) -> void;
+	auto print(std::ostream &stream, int indent) -> void override;
 	auto validate() const -> void override;
 };
 

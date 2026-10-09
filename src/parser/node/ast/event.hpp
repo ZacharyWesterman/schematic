@@ -10,7 +10,7 @@ struct event : public ast_node {
 	z::core::array<token> triggers;
 	token code_block;
 
-	auto print(std::ostream &stream, int indent) -> void;
+	auto print(std::ostream &stream, int indent) -> void override;
 	auto validate() const -> void override;
 };
 

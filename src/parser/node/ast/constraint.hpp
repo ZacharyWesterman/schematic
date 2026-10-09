@@ -9,7 +9,7 @@ struct constraint : public ast_node {
 	token name;
 	z::core::array<token> args;
 
-	auto print(std::ostream &stream, int indent) -> void;
+	auto print(std::ostream &stream, int indent) -> void override;
 	auto validate_type(const zstring &type, bool is_array) const -> void;
 };
 

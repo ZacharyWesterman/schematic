@@ -11,6 +11,8 @@ const char *const map[] = {
     "<text>", // STRING
     "<code block>", // CODE
     "<number>", // NUMBER
+    "<color>", // COLOR
+    "<boolean>", // BOOLEAN
 
     "`{`", // LBRACE
     "`}`", // RBRACE

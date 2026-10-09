@@ -10,6 +10,8 @@ enum {
 	STRING,
 	CODE,
 	NUMBER,
+	COLOR,
+	BOOLEAN,
 
 	LBRACE,
 	RBRACE,

@@ -13,7 +13,7 @@ struct variable : public ast_node {
 	z::core::array<ref<constraint>> constraints;
 	bool array_type;
 
-	auto print(std::ostream &stream, int indent) -> void;
+	auto print(std::ostream &stream, int indent) -> void override;
 	auto validate() const -> void override;
 };
 

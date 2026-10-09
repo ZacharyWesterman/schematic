@@ -1,6 +1,6 @@
 #include "tokens.hpp"
 
-namespace parser::node::tokens {
+namespace parser::blueprint::tokens {
 
 /* clang-format off */
 const char *const map[] = {
@@ -8,6 +8,8 @@ const char *const map[] = {
 	"<identifier>", // IDENTIFIER
     "<text>", // STRING
     "<number>", // NUMBER
+    "<color>", // COLOR
+    "<boolean>", // BOOLEAN
 
     "`{`", // LBRACE
     "`}`", // RBRACE
@@ -23,4 +25,4 @@ const char *const map[] = {
 };
 /* clang-format on */
 
-} // namespace parser::node::tokens
+} // namespace parser::blueprint::tokens

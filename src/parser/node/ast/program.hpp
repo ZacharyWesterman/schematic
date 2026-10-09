@@ -10,7 +10,7 @@ struct program : public ast_node {
 	z::core::array<ref<tag_decl>> tags;
 	z::core::array<ref<node_decl>> nodes;
 
-	auto print(std::ostream &stream, int indent) -> void;
+	auto print(std::ostream &stream, int indent) -> void override;
 	auto validate() const -> void override;
 
 private:

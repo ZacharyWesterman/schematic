@@ -16,9 +16,12 @@ else
 VER_PATCH = $(shell git rev-list --count $(VER_CUTOFF_COMMIT)..HEAD^)
 endif
 
-D0 = $(sort $(dir $(wildcard src/*/)))
-D1 = $(sort $(dir $(wildcard $(D0)*/)))
-DIRS := $(sort $(dir $(wildcard $(D1)*/)) $(D0) $(D1) )
+D0 = src/
+D1 = $(wildcard $(D0)*/)
+D2 = $(foreach dir,$(D1),$(wildcard $(dir)*/))
+D3 = $(foreach dir,$(D2),$(wildcard $(dir)*/))
+D4 = $(foreach dir,$(D3),$(wildcard $(dir)*/))
+DIRS := $(D0) $(D1) $(D2) $(D3) $(D4)
 SRCS := $(wildcard $(addsuffix *.cpp, $(DIRS)))
 HEADERS := $(wildcard $(addsuffix *.hpp, $(DIRS))) $(wildcard src/*.hpp)
 OBJS := obj/main.o obj/version.o $(patsubst src/%.cpp,obj/%.o,$(SRCS))

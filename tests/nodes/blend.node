@@ -1,0 +1,12 @@
+@color as "Colors"
+
+
+[@color]
+node blend as "Blend" {
+    in c1: color as "Color 1" {
+        default: #ff0000
+    }
+    in c2: color as "Color 2" {
+        default: #bbff00
+    }
+}

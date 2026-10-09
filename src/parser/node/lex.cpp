@@ -19,6 +19,8 @@ const std::regex KWD_ON("^on\\b");
 const std::regex KWD_INCLUDE("^include\\b");
 const std::regex COMMENT("^//.*");
 const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::regex_constants::multiline);
+const std::regex COLOR("^#[a-fA-F0-9]*\\b");
+const std::regex BOOLEAN("^(true|false)\\b");
 
 #define CHAR_TOKEN(chr, id) \
 	if (c == chr) { \
@@ -54,6 +56,38 @@ const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::re
 	}
 
 namespace parser::node {
+
+auto parse_hex_color(const zstring &color) -> double {
+	// Assume color has only [a-fA-F0-9]+
+	int red = 0;
+	int green = 0;
+	int blue = 0;
+	int alpha = 0;
+
+	const auto len = color.length();
+
+	if (len < 3) {
+		return 0;
+	}
+
+	if (len <= 4) {
+		red = color.substr(0, 1).integer(16) << 4;
+		green = color.substr(1, 1).integer(16) << 4;
+		blue = color.substr(2, 1).integer(16) << 4;
+		if (len == 4) {
+			alpha = color.substr(3, 1).integer(16) << 4;
+		}
+	} else {
+		red = color.substr(0, 2).integer(16);
+		green = color.substr(2, 2).integer(16);
+		blue = color.substr(4, 2).integer(16);
+		if (len == 4) {
+			alpha = color.substr(6, 2).integer(16);
+		}
+	}
+
+	return (red << 24) | (green << 16) | (blue << 8) | alpha;
+}
 
 auto get_token(programText &state) -> std::optional<token> {
 	const auto &text = state.text;
@@ -99,6 +133,15 @@ auto get_token(programText &state) -> std::optional<token> {
 			continue;
 		}
 
+		// Booleans
+		if (std::regex_search(str, match, BOOLEAN)) {
+			const int old_index = state.index;
+			state.index += match.length();
+			return token{
+				state.filename, tokens::COLOR, span{old_index, state.index - 1}, match.str(), (double)(match.str() == "true"),
+			};
+		}
+
 		CHECK_TOKEN_WITH(TAG, match.str().substr(1))
 		CHECK_TOKEN_WITH(EVENT, match.str().substr(1))
 		CHECK_TOKEN(KWD_NODE)
@@ -112,6 +155,15 @@ auto get_token(programText &state) -> std::optional<token> {
 		CHECK_TOKEN_WITH_VALUE(NUMBER_HEX, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(16))
 		CHECK_TOKEN_WITH_VALUE(NUMBER_OCT, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(8))
 		CHECK_TOKEN_WITH_VALUE(NUMBER_BIN, NUMBER, zstring(match.str()), substr(2).replace("_", "").floating(2))
+
+		// Colors
+		if (std::regex_search(str, match, COLOR)) {
+			const int old_index = state.index;
+			state.index += match.length();
+			return token{
+				state.filename, tokens::COLOR, span{old_index, state.index - 1}, match.str(), parse_hex_color(match.str().substr(1)),
+			};
+		}
 
 		if (std::regex_search(str, match, COMMENT_MULTILINE)) {
 			state.index += match.length();

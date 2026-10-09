@@ -15,6 +15,8 @@ auto accept(tokenizer &lexer, int token_id) -> std::optional<token>;
 
 auto accept(tokenizer &lexer, std::initializer_list<parse_rule> rules) -> std::optional<ast_ref>;
 
+auto accept(tokenizer &lexer, std::initializer_list<int> token_ids) -> std::optional<token>;
+
 auto expect(tokenizer &lexer, int token_id, const zstring &expected_symbol) -> token;
 
 auto expect(tokenizer &lexer, std::initializer_list<int> token_ids, std::initializer_list<const char *> expected_symbols) -> token;

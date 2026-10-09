@@ -11,7 +11,7 @@ struct tag_decl : public ast_node {
 	std::optional<token> help_text;
 	std::optional<token> parent;
 
-	auto print(std::ostream &stream, int indent) -> void;
+	auto print(std::ostream &stream, int indent) -> void override;
 };
 
 } // namespace parser::node::ast

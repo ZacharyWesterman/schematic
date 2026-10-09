@@ -131,9 +131,10 @@ auto constraint(tokenizer &lexer) -> opt_ref<ast::constraint> {
 	EXPECT(COLON);
 
 	// Constraints must have at LEAST 1 value!
-	node->args.push(expect(lexer, {tokens::IDENTIFIER, tokens::NUMBER, tokens::STRING}, {M(tokens::IDENTIFIER), M(tokens::NUMBER), M(tokens::STRING)}));
+	std::initializer_list<int> ok_tokens = {tokens::IDENTIFIER, tokens::NUMBER, tokens::STRING, tokens::COLOR, tokens::BOOLEAN};
+	node->args.push(expect(lexer, ok_tokens, {M(tokens::IDENTIFIER), M(tokens::NUMBER), M(tokens::STRING), M(tokens::COLOR), M(tokens::BOOLEAN)}));
 	std::optional<token> arg;
-	while ((arg = ACCEPT(IDENTIFIER)) || (arg = ACCEPT(NUMBER)) || (arg = ACCEPT(STRING))) {
+	while ((arg = accept(lexer, ok_tokens))) {
 		node->args.push(arg.value());
 	}
 
@@ -285,7 +286,7 @@ auto program(tokenizer &lexer) -> ref<ast::program> {
 		}
 
 		if (lexer.empty()) {
-			// End of program.
+			// End of file.
 			break;
 		}
 

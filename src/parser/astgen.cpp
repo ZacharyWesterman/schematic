@@ -28,6 +28,16 @@ auto accept(tokenizer &lexer, std::initializer_list<parse_rule> rules) -> std::o
 	return {};
 }
 
+auto accept(tokenizer &lexer, std::initializer_list<int> token_ids) -> std::optional<token> {
+	for (auto id : token_ids) {
+		auto node = accept(lexer, id);
+		if (node) {
+			return node;
+		}
+	}
+	return {};
+}
+
 auto expect(tokenizer &lexer, int token_id, const zstring &expected_symbol) -> token {
 	auto result = accept(lexer, token_id);
 
