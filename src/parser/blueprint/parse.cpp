@@ -6,6 +6,7 @@
 
 #include "ast/blueprint.hpp"
 #include "ast/comment.hpp"
+#include "ast/constructor.hpp"
 #include "ast/coords.hpp"
 
 #define M(token_id) tokens::map[token_id]
@@ -56,6 +57,34 @@ auto comment(tokenizer &lexer) -> opt_ref<ast::comment> {
 	return node;
 }
 
+auto constructor(tokenizer &lexer) -> ref<ast::constructor> {
+	auto tok = lexer.existing_token().value();
+
+	auto node = create<ast::constructor>();
+	node->name = tok;
+	node->range = tok.range;
+	node->position = coords(lexer);
+	EXPECT(EQUALS);
+	node->node = EXPECT(IDENTIFIER);
+	node->range.end = node->node.range.end;
+	node->title = ACCEPT(STRING);
+
+	// Input values
+	if (ACCEPT(LPAREN)) {
+		// TODO!
+		node->range.end = EXPECT(RPAREN).range.end;
+	}
+
+	// Output defaults
+	if (ACCEPT(ARROW)) {
+		EXPECT(LPAREN);
+		// TODO!
+		node->range.end = EXPECT(RPAREN).range.end;
+	}
+
+	return node;
+}
+
 auto blueprint(tokenizer &lexer) -> ref<ast::blueprint> {
 	auto blue = create<ast::blueprint>();
 	blue->filename = lexer.filename();
@@ -66,6 +95,11 @@ auto blueprint(tokenizer &lexer) -> ref<ast::blueprint> {
 		if (cmt) {
 			blue->comments.push(cmt.value());
 			continue;
+		}
+
+		// Only other top-levels start with an identifier.
+		if (ACCEPT(IDENTIFIER)) {
+			auto constr = constructor(lexer);
 		}
 
 		if (lexer.empty()) {
