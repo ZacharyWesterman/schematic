@@ -15,6 +15,7 @@ inline auto create(Args &&...args) -> std::shared_ptr<T> {
 }
 
 struct ast_node : public std::enable_shared_from_this<ast_node> {
+	zstring filename;
 	span range;
 
 	virtual ~ast_node() = default;

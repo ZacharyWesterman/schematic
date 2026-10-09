@@ -6,6 +6,7 @@
 namespace parser {
 
 struct token {
+	zstring filename;
 	int id;
 	span range;
 	zstring text;

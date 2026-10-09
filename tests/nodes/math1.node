@@ -3,7 +3,7 @@ node add as "Add" {
     "Add two numbers"
 
     in val1: number as "V1" {
-        decoration: 2 digits,
+        format: 2 digits,
         min: 0,
         max: 1,
     }

@@ -62,7 +62,7 @@ auto node_decl::validate() const -> void {
 		// Make sure input names don't repeat.
 		for (int j = 0; j < i; j++) {
 			if (inputs[i]->name.text == inputs[j]->name.text) {
-				throw parse_error("An input named `"_zs + inputs[i]->name.text + "` already exists in this node.", inputs[i]->name.range);
+				throw parse_error("An input named `"_zs + inputs[i]->name.text + "` already exists in this node.", filename, inputs[i]->name.range);
 			}
 		}
 
@@ -73,14 +73,14 @@ auto node_decl::validate() const -> void {
 		// Make sure output names don't repeat input names.
 		for (int j = 0; j < inputs.length(); j++) {
 			if (outputs[i]->name.text == inputs[j]->name.text) {
-				throw parse_error("An input named `"_zs + outputs[i]->name.text + "` already exists in this node.", outputs[i]->name.range);
+				throw parse_error("An input named `"_zs + outputs[i]->name.text + "` already exists in this node.", filename, outputs[i]->name.range);
 			}
 		}
 
 		// Make sure output names don't repeat.
 		for (int j = 0; j < i; j++) {
 			if (outputs[i]->name.text == outputs[j]->name.text) {
-				throw parse_error("An output named `"_zs + outputs[i]->name.text + "` already exists in this node.", outputs[i]->name.range);
+				throw parse_error("An output named `"_zs + outputs[i]->name.text + "` already exists in this node.", filename, outputs[i]->name.range);
 			}
 		}
 
@@ -100,11 +100,11 @@ auto node_decl::validate() const -> void {
 				}
 
 				if (!found_input) {
-					throw parse_error("No input with the name `"_zs + trigger.text + "` exists in this node.", trigger.range);
+					throw parse_error("No input with the name `"_zs + trigger.text + "` exists in this node.", filename, trigger.range);
 				}
 			} else {
 				if (trigger.text != "tick" && trigger.text != "init") {
-					throw parse_error("Invalid automatic event `!"_zs + trigger.text + "`. Supported events are `!tick` and `!init`.", trigger.range);
+					throw parse_error("Invalid automatic event `!"_zs + trigger.text + "`. Supported events are `!tick` and `!init`.", filename, trigger.range);
 				}
 			}
 		}
@@ -121,7 +121,7 @@ auto node_decl::validate() const -> void {
 		if (error_code) {
 			int index = lua_gettop(state);
 			auto error_msg = lua_tostring(state, index);
-			throw parse_error("Lua error in `"_zs + name.text + "` node: " + error_msg, block.range);
+			throw parse_error("Lua error in `"_zs + name.text + "` node: " + error_msg, filename, block.range);
 		}
 	}
 	lua_close(state);

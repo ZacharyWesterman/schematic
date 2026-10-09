@@ -7,6 +7,7 @@
 namespace parser {
 
 struct programText {
+	zstring filename;
 	zstring text;
 	int index;
 };
@@ -29,6 +30,8 @@ public:
 	auto get_token() -> std::optional<token>;
 	auto started() const -> bool;
 	auto empty() const -> bool;
+
+	auto filename() const -> zstring;
 };
 
 } // namespace parser

@@ -30,10 +30,11 @@ auto include(tokenizer &lexer) -> optional<ast_ref> {
 	}
 
 	auto node = create<ast::include>();
-	node->filename = EXPECT(STRING);
+	node->source = EXPECT(STRING);
+	node->filename = lexer.filename();
 
 	node->range.begin = tok.value().range.begin;
-	node->range.end = node->filename.range.end;
+	node->range.end = node->source.range.end;
 
 	return node;
 }
@@ -54,6 +55,7 @@ auto tag_decl(tokenizer &lexer) -> opt_ref<ast::tag_decl> {
 
 	EXPECT(KWD_AS);
 	node->description = EXPECT(STRING);
+	node->filename = lexer.filename();
 	node->range.end = node->description.range.end;
 
 	if (accept(lexer, tokens::LBRACE)) {
@@ -89,7 +91,7 @@ auto tag_list(tokenizer &lexer) -> optional<array<token>> {
 			const auto t2 = tokens::map[tokens::RBRACKET];
 			const auto t3 = tokens::map[tokens::TAG];
 
-			throw parse_error("Expected "_zs + t1 + ", " + t2 + " or " + t3 + " but found " + symbol(lexer.existing_token()), lexer.get_span());
+			throw parse_error("Expected "_zs + t1 + ", " + t2 + " or " + t3 + " but found " + symbol(lexer.existing_token()), lexer.filename(), lexer.get_span());
 		}
 	} while (true);
 
@@ -103,6 +105,7 @@ auto event(tokenizer &lexer) -> opt_ref<ast::event> {
 	}
 
 	auto node = create<ast::event>();
+	node->filename = lexer.filename();
 	node->range = tok.value().range;
 	node->triggers.push(EXPECT_EITHER(IDENTIFIER, EVENT));
 
@@ -124,6 +127,7 @@ auto constraint(tokenizer &lexer) -> opt_ref<ast::constraint> {
 
 	auto node = create<ast::constraint>();
 	node->name = name.value();
+	node->filename = lexer.filename();
 	EXPECT(COLON);
 
 	// Constraints must have at LEAST 1 value!
@@ -141,6 +145,7 @@ auto constraint(tokenizer &lexer) -> opt_ref<ast::constraint> {
 auto variable(tokenizer &lexer) -> ref<ast::variable> {
 	auto node = create<ast::variable>();
 	node->name = EXPECT(IDENTIFIER);
+	node->filename = lexer.filename();
 	EXPECT(COLON);
 	node->type = EXPECT(IDENTIFIER);
 	node->array_type = false;
@@ -174,7 +179,7 @@ auto variable(tokenizer &lexer) -> ref<ast::variable> {
 		}
 
 		const auto t1 = tokens::map[tokens::RBRACE];
-		throw parse_error("Expected constraint or "_zs + t1 + " but found " + symbol(lexer.existing_token()), lexer.get_span());
+		throw parse_error("Expected constraint or "_zs + t1 + " but found " + symbol(lexer.existing_token()), lexer.filename(), lexer.get_span());
 	}
 
 	node->range.end = close_brace.value().range.end;
@@ -208,6 +213,7 @@ auto node_decl(tokenizer &lexer) -> opt_ref<ast::node_decl> {
 	}
 
 	auto node = create<ast::node_decl>();
+	node->filename = lexer.filename();
 	node->range = tok.value().range;
 
 	if (tags) {
@@ -253,15 +259,16 @@ auto node_decl(tokenizer &lexer) -> opt_ref<ast::node_decl> {
 
 		// Unexpected token
 		auto tok = lexer.existing_token();
-		throw parse_error(("Expected an input, output, event, code block or include, but found "_zs + symbol(tok) + "."), lexer.get_span());
+		throw parse_error(("Expected an input, output, event, code block or include, but found "_zs + symbol(tok) + "."), lexer.filename(), lexer.get_span());
 	}
 
 	node->range.end = close_brace.value().range.end;
 	return node;
 }
 
-auto program(tokenizer &lexer) -> ast_ref {
+auto program(tokenizer &lexer) -> ref<ast::program> {
 	auto pgm = create<ast::program>();
+	pgm->filename = lexer.filename();
 	pgm->range = lexer.get_span();
 
 	do {
@@ -284,7 +291,7 @@ auto program(tokenizer &lexer) -> ast_ref {
 
 		// Unexpected token
 		auto tok = lexer.existing_token();
-		throw parse_error(("Expected a node or tag definition, but found "_zs + symbol(tok) + "."), lexer.get_span());
+		throw parse_error(("Expected a node or tag definition, but found "_zs + symbol(tok) + "."), lexer.filename(), lexer.get_span());
 
 	} while (true);
 
@@ -292,8 +299,12 @@ auto program(tokenizer &lexer) -> ast_ref {
 	return pgm;
 }
 
-auto parse(tokenizer &lexer) -> ast_ref {
+auto parse(tokenizer &lexer) -> ref<ast::program> {
 	return program(lexer);
+}
+
+auto new_program() -> ref<ast::program> {
+	return create<ast::program>();
 }
 
 } // namespace parser::node

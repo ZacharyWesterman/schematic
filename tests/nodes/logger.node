@@ -1,0 +1,16 @@
+node logger as "Logger" {
+    "Log info or warning messages."
+
+    in trigger: none as "Trigger"
+    in info: any as "Info"
+    in warn: any as "Warning"
+
+    on trigger `
+        if info ~= '' and info ~= nil then
+            print('INFO:' .. info)
+        end
+        if warn ~= '' and warn ~= nil then
+            print('WARN: ' .. warn)
+        end
+    `
+}

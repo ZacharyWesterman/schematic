@@ -5,6 +5,6 @@
 
 namespace parser::node {
 
-auto lex(const zstring &text) -> tokenizer;
+auto lex(const zstring &text, const zstring &filename) -> tokenizer;
 
 }

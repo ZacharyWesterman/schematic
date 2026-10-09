@@ -33,7 +33,7 @@ auto expect(tokenizer &lexer, int token_id, const zstring &expected_symbol) -> t
 
 	if (!result) {
 		auto tok = lexer.existing_token();
-		throw parse_error("Expected "_zs + expected_symbol + ", but found " + symbol(tok), lexer.get_span());
+		throw parse_error("Expected "_zs + expected_symbol + ", but found " + symbol(tok), lexer.filename(), lexer.get_span());
 	}
 
 	return result.value();
@@ -64,7 +64,7 @@ auto expect(tokenizer &lexer, std::initializer_list<int> token_ids, std::initial
 
 	msg += " but found ";
 	msg += symbol(tok);
-	throw parse_error(msg, lexer.get_span());
+	throw parse_error(msg, lexer.filename(), lexer.get_span());
 }
 
 auto expect(tokenizer &lexer, parse_rule rule, const zstring &expected_symbol) -> ast_ref {
@@ -72,7 +72,7 @@ auto expect(tokenizer &lexer, parse_rule rule, const zstring &expected_symbol) -
 
 	if (!result) {
 		auto tok = lexer.existing_token();
-		throw parse_error("Expected "_zs + expected_symbol + ", but found " + symbol(tok), lexer.get_span());
+		throw parse_error("Expected "_zs + expected_symbol + ", but found " + symbol(tok), lexer.filename(), lexer.get_span());
 	}
 
 	return result.value();

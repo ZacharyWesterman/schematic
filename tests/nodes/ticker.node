@@ -1,10 +1,13 @@
 [@time]
 node ticker as "Ticker" {
     out init: none as "Init"
-    out tick: number as "Tick"
+
+    //"none" outputs can be given a value.
+    out tick: none as "Tick"
+    out total: number as "Count"
 
     `
-    local tick_count = 0
+    local tick_count: number = 0
     `
 
     on !init `
@@ -14,6 +17,7 @@ node ticker as "Ticker" {
 
     on !tick `
         tick_count = tick_count + 1
-        output_tick(tick_count)
+        output_tick()
+        output_total(tick_count)
     `
 }

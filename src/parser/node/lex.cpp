@@ -22,7 +22,12 @@ const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::re
 
 #define CHAR_TOKEN(chr, id) \
 	if (c == chr) { \
-		return token{tokens::id, span{state.index, ++state.index}, c}; \
+		return token{ \
+			state.filename, \
+			tokens::id, \
+			span{state.index, ++state.index}, \
+			c, \
+		}; \
 	}
 
 #define CHECK_TOKEN(id) CHECK_TOKEN_WITH(id, match.str())
@@ -32,6 +37,7 @@ const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::re
 		const int old_index = state.index; \
 		state.index += match.length(); \
 		return token{ \
+			state.filename, \
 			tokens::id, \
 			span{old_index, state.index}, \
 			match_expr, \
@@ -43,10 +49,7 @@ const std::regex COMMENT_MULTILINE("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", std::re
 		const int old_index = state.index; \
 		state.index += match.length(); \
 		return token{ \
-			tokens::out_id, \
-			span{old_index, state.index - 1}, \
-			match_expr, \
-			match_expr.parse_expr, \
+			state.filename, tokens::out_id, span{old_index, state.index - 1}, match_expr, match_expr.parse_expr, \
 		}; \
 	}
 
@@ -65,6 +68,7 @@ auto get_token(programText &state) -> std::optional<token> {
 			state.index++;
 			if (c == read_until) {
 				return token{
+					state.filename,
 					c == '"' ? tokens::STRING : tokens::CODE,
 					span{read_until_index, state.index},
 					text.substr(read_until_index + 1, state.index - read_until_index - 2),
@@ -114,13 +118,14 @@ auto get_token(programText &state) -> std::optional<token> {
 			continue;
 		}
 
-		throw parse_error("Unknown character `"_zs + c + "`", {state.index, state.index++});
+		throw parse_error("Unknown character `"_zs + c + "`", state.filename, {state.index, state.index++});
 	}
 
 	// Spit out any remaining string or code segments
 	if (read_until) {
 		state.index = text.length();
 		return token{
+			state.filename,
 			read_until == '"' ? tokens::STRING : tokens::CODE,
 			span{read_until_index, state.index},
 			text.substr(read_until_index + 1, state.index - read_until_index - 1),
@@ -130,8 +135,8 @@ auto get_token(programText &state) -> std::optional<token> {
 	return {};
 }
 
-auto lex(const zstring &text) -> tokenizer {
-	return tokenizer({text, 0}, get_token);
+auto lex(const zstring &text, const zstring &filename) -> tokenizer {
+	return tokenizer({filename, text, 0}, get_token);
 }
 
 } // namespace parser::node

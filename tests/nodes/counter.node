@@ -1,0 +1,10 @@
+node counter as "Counter" {
+    in count: none as "Count"
+    in value: number as "Value"
+    out result: number as "Output"
+
+    on count `
+        output_result(value)
+        value = value + 1
+    `
+}

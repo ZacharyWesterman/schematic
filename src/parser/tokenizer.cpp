@@ -34,4 +34,8 @@ auto tokenizer::empty() const -> bool {
 	return token_pulled && !tok;
 }
 
+auto tokenizer::filename() const -> zstring {
+	return state.filename;
+}
+
 } // namespace parser

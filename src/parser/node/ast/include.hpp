@@ -6,7 +6,7 @@
 namespace parser::node::ast {
 
 struct include : public ast_node {
-	token filename;
+	token source;
 
 	auto print(std::ostream &stream, int indent) -> void;
 	auto validate() const -> void override;

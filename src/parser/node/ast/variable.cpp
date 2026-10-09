@@ -20,12 +20,12 @@ auto variable::print(std::ostream &stream, int indent) -> void {
 auto variable::validate() const -> void {
 	// Make sure variable has a valid type
 	if (!valid_types.contains(type.text)) {
-		throw parse_error("Invalid data type `"_zs + type.text + "`.", type.range);
+		throw parse_error("Invalid data type `"_zs + type.text + "`.", filename, type.range);
 	}
 
 	// Only strings and numbers have array variants
 	if (type.text != "string" && type.text != "number" && array_type) {
-		throw parse_error("Arrays of `"_zs + type.text + "` type are not supported. Only string arrays and number arrays are allowed.", type.range);
+		throw parse_error("Arrays of `"_zs + type.text + "` type are not supported. Only string arrays and number arrays are allowed.", filename, type.range);
 	}
 
 	// Make sure all constraints are valid, and aren't specified multiple times.
@@ -40,7 +40,7 @@ auto variable::validate() const -> void {
 
 		for (int j = 0; j < i; j++) {
 			if (name == constraints[j]->name.text) {
-				throw parse_error("Redundant constraint `"_zs + name + "` already defined earlier.", constraints[i]->name.range);
+				throw parse_error("Redundant constraint `"_zs + name + "` already defined earlier.", filename, constraints[i]->name.range);
 			}
 		}
 
@@ -59,15 +59,15 @@ auto variable::validate() const -> void {
 
 	// Make sure any `max` constraint is strictly greater than the `min` constraint!
 	if (max <= min) {
-		throw parse_error("Constraint `max` must be strictly greater than `min`.", name.range);
+		throw parse_error("Constraint `max` must be strictly greater than `min`.", filename, name.range);
 	}
 
 	if (is_integer) {
 		if (has_max && std::trunc(max) != max) {
-			throw parse_error("Constraint `integer` is true, so `max` must be an integer.", name.range);
+			throw parse_error("Constraint `integer` is true, so `max` must be an integer.", filename, name.range);
 		}
 		if (has_min && std::trunc(min) != min) {
-			throw parse_error("Constraint `integer` is true, so `min` must be an integer.", name.range);
+			throw parse_error("Constraint `integer` is true, so `min` must be an integer.", filename, name.range);
 		}
 	}
 }

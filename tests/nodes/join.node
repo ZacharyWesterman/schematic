@@ -1,9 +1,15 @@
 node join as "Join Array" {
-    "Join an array into a single string"
+    "Join an array into a single string of text."
 
     in trigger: none as "Join"
     in array: string[] as "Array"
     in delim: string as "Delimiter"
 
     out result: string as "Result"
+
+    on trigger, !init `
+        self.output_result(
+            table.concat(self.array, self.delim)
+        )
+    `
 }

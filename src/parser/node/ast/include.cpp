@@ -6,11 +6,11 @@ namespace parser::node::ast {
 
 auto include::print(std::ostream &stream, int indent) -> void {
 	auto indent_text = " "_zs.repeat(indent * 2);
-	(indent_text + "include [" + filename.text + "]").writeln(stream);
+	(indent_text + "include [" + source.text + "]").writeln(stream);
 }
 
 auto include::validate() const -> void {
-	throw parse_error("Includes are not supported yet!", range);
+	throw parse_error("Includes are not supported yet!", filename, range);
 }
 
 } // namespace parser::node::ast

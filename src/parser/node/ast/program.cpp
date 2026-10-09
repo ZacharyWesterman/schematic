@@ -21,7 +21,7 @@ auto program::get_parent_tag_index(const token &tag) const -> int {
 		}
 	}
 
-	throw parse_error("Tag `"_zs + tag.text + "` does not exist.", tag.range);
+	throw parse_error("Tag `"_zs + tag.text + "` does not exist.", tag.filename, tag.range);
 }
 
 auto program::validate() const -> void {
@@ -29,7 +29,7 @@ auto program::validate() const -> void {
 		// Make sure tag hasn't already been defined.
 		for (int j = 0; j < i; j++) {
 			if (j < i && tags[i]->name.text == tags[j]->name.text) {
-				throw parse_error("Tag `"_zs + tags[i]->name.text + "` defined multiple times.", tags[i]->name.range);
+				throw parse_error("Tag `"_zs + tags[i]->name.text + "` defined multiple times.", tags[i]->filename, tags[i]->name.range);
 			}
 		}
 
@@ -40,7 +40,7 @@ auto program::validate() const -> void {
 			parent_route += "->"_zs + tags[tag_index]->parent.value().text;
 			tag_index = get_parent_tag_index(tags[tag_index]->parent.value());
 			if (tag_index == i) {
-				throw parse_error("Tag `"_zs + tags[i]->name.text + "` has a circular dependency. (" + parent_route + ")", tags[i]->name.range);
+				throw parse_error("Tag `"_zs + tags[i]->name.text + "` has a circular dependency. (" + parent_route + ")", tags[i]->filename, tags[i]->name.range);
 			}
 		}
 	}
@@ -49,7 +49,7 @@ auto program::validate() const -> void {
 		// Make sure node hasn't already been defined.
 		for (int j = 0; j < i; j++) {
 			if (nodes[i]->name.text == nodes[j]->name.text) {
-				throw parse_error("Node `"_zs + nodes[i]->name.text + "` defined multiple times.", nodes[i]->name.range);
+				throw parse_error("Node `"_zs + nodes[i]->name.text + "` defined multiple times.", nodes[i]->filename, nodes[i]->name.range);
 			}
 		}
 

@@ -26,7 +26,7 @@ auto event::validate() const -> void {
 	if (error_code) {
 		int index = lua_gettop(state);
 		auto error_msg = lua_tostring(state, index);
-		throw parse_error("Lua error in event handler: "_zs + error_msg, code_block.range);
+		throw parse_error("Lua error in event handler: "_zs + error_msg, filename, code_block.range);
 	}
 	lua_close(state);
 }

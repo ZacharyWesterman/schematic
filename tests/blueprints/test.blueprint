@@ -1,0 +1,21 @@
+tick_node{0,0} = ticker(
+    // No input values
+) -> (
+    // Output default values (only allowed for "none" outputs)
+    tick = string[]
+)
+
+count_node{5,5} = count(
+    // This is the value that *this node* has for its field(s), which may differ from the default values.
+    value = 1
+)
+
+log_node{4,3} = logger(
+    info = "custom value"
+    // No custom value for 'warn' field is OK; it will get the default value.
+)
+
+tick_node.tick ->
+    | {1,2} -> count_node.count
+    | {1,2} -> log_node.info
+    | {1,2} -> log_node.trigger
