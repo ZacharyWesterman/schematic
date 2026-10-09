@@ -67,17 +67,21 @@ auto field_args(tokenizer &lexer) -> ref<ast::value> {
 	auto node = create<ast::value>();
 
 	auto type = ACCEPT(IDENTIFIER);
-	if (type) {
-		// If a type name is given, this is for sure an array.
-		node->array_type = true;
-		EXPECT(LBRACKET);
-	} else {
-		node->array_type = ACCEPT(LBRACKET).has_value();
-	}
 	node->type = type;
 	node->range = type->range;
+	node->array_type = false;
 
-	if (node->array_type) {
+	if (type) {
+		// The only time a type name would be used is when type cannot be deduced.
+		// That is, BOTH of the following are true:
+		// 1. The array has zero elements.
+		// 2. The field type is `any`.
+		// So, it makes sense that using an explicit type name requires an empty array.
+		EXPECT(LBRACKET);
+		node->array_type = true;
+		node->range.end = EXPECT(RBRACKET).range.end;
+	} else if (ACCEPT(LBRACKET)) {
+		node->array_type = true;
 		// If `[...]` is used, multiple values can be put between the brackets.
 		while (optional<token> val = array_value(lexer)) {
 			node->values.push(val.value());
@@ -88,9 +92,9 @@ auto field_args(tokenizer &lexer) -> ref<ast::value> {
 		node->values.push(val.value());
 	}
 
-	if (!type && !node->values.length()) {
+	if (!type && !node->array_type && !node->values.length()) {
 		auto tok = lexer.existing_token();
-		throw parse_error("Expected <type> or <value>, but found "_zs + symbol(tok), lexer.filename(), lexer.get_span());
+		throw parse_error("Expected a value, but found "_zs + symbol(tok), lexer.filename(), lexer.get_span());
 	}
 
 	return node;

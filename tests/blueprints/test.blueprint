@@ -5,7 +5,7 @@ my_node{0,1} = some_node "Node title (if not default)" (
 ) -> (
     //Output defaults (the arrow and these parens) are optional.
     // Output values are only allowed for "none" outputs.
-    output_name = number["output value"] //Type is deduced from the value.
+    output_name = ["output value"] //Type is deduced from the value.
 )
 
 tick_node{0,0} = ticker "My ticker" (
